@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Fiszki Polski-Українська</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        :root {
+            --cream: #FFF8F0;
+            --deep-red: #8B2635;
+            --warm-red: #C1403D;
+            --soft-pink: #FFE8E8;
+            --charcoal: #2C2C2C;
+            --light-gray: #F5F5F5;
+            --medium-gray: #999999;
+            --success: #2D7D5E;
+            --blue: #1976D2;
+            --light-blue: #E3F2FD;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, #FFF5E6 100%);
+            min-height: 100vh;
+            color: var(--charcoal);
+            -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                padding: 2rem;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            -webkit-animation: fadeInDown 0.8s ease-out;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--deep-red), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        @media (min-width: 768px) {
+            .logo {
+                font-size: 3.5rem;
+            }
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            color: var(--warm-red);
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(139, 38, 53, 0.08);
+            margin-bottom: 1.5rem;
+            -webkit-animation: fadeInUp 0.6s ease-out;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @media (min-width: 768px) {
+            .card {
+                padding: 2.5rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.5rem;
+            color: var(--deep-red);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Flashcard Styles */
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .flashcard-container {
+                margin-bottom: 2rem;
+                padding-bottom: 0;
+            }
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            min-height: 250px;
+            max-height: 55vh;
+            cursor: pointer;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        @media (min-width: 768px) {
+            .flashcard {
+                min-height: 450px;
+                max-height: none;
+            }
+        }
+
+        @media (max-height: 667px) {
+            .flashcard {
+                min-height: 220px;
+                max-height: 50vh;
+            }
+            .flashcard-face {
+                min-height: 220px;
+                max-height: 50vh;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-height: 568px) {
+            .flashcard {
+                min-height: 200px;
+                max-height: 45vh;
+            }
+            .flashcard-face {
+                min-height: 200px;
+                max-height: 45vh;
+                padding: 0.875rem;
+            }
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            min-height: 250px;
+            max-height: 55vh;
+            overflow-y: auto;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (min-width: 768px) {
+            .flashcard-face {
+                min-height: 450px;
+                padding: 3rem;
+            }
+        }
+
+        .flashcard-front {
+            background: linear-gradient(135deg, #ffffff 0%, #fff8f0 100%);
+            border: 3px solid var(--deep-red);
+        }
+
+        .flashcard-back {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            border: 3px solid var(--blue);
+            transform: rotateY(180deg);
+        }
+
+        .flag-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .flashcard-word {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--deep-red);
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .flashcard-word {
+                font-size: 3rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        .flashcard-example {
+            font-size: 0.95rem;
+            color: var(--charcoal);
+            line-height: 1.6;
+            font-style: italic;
+            margin-bottom: 0.75rem;
+            max-width: 600px;
+        }
+
+        @media (min-width: 768px) {
+            .flashcard-example {
+                font-size: 1.3rem;
+                line-height: 1.8;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .flashcard-translation {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--blue);
+            margin-bottom: 0.75rem;
+            word-wrap: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .flashcard-translation {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .flashcard-hint {
+            font-size: 1rem;
+            color: var(--charcoal);
+            opacity: 0.8;
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .flip-hint {
+            margin-top: auto;
+            padding-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+            font-weight: 500;
+        }
+
+        @media (min-width: 768px) {
+            .flip-hint {
+                padding-top: 2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        button {
+            padding: 0.875rem 1.5rem;
+            background: var(--deep-red);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (min-width: 768px) {
+            button {
+                padding: 0.875rem 2rem;
+                font-size: 1rem;
+            }
+        }
+
+        button:hover {
+            background: var(--warm-red);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(193, 64, 61, 0.3);
+        }
+
+        button.secondary {
+            background: transparent;
+            color: var(--deep-red);
+            border: 2px solid var(--deep-red);
+        }
+
+        button.secondary:hover {
+            background: var(--soft-pink);
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .button-group {
+                flex-direction: row;
+                gap: 1rem;
+            }
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        @media (min-width: 768px) {
+            .navigation-buttons {
+                margin-top: 2rem;
+            }
+        }
+
+        .navigation-buttons button {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--deep-red), var(--warm-red));
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--soft-pink);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--deep-red);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--charcoal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-badge {
+            padding: 0.5rem 1rem;
+            background: var(--light-gray);
+            color: var(--charcoal);
+            border: 2px solid var(--medium-gray);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .category-badge:hover,
+        .category-badge.active {
+            background: var(--deep-red);
+            color: white;
+            border-color: var(--deep-red);
+            transform: scale(1.05);
+        }
+
+        .import-section {
+            border: 2px dashed var(--medium-gray);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            background: var(--light-gray);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 0.875rem 1.5rem;
+            background: white;
+            color: var(--deep-red);
+            border: 2px solid var(--deep-red);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            background: var(--soft-pink);
+        }
+
+        #importStatus {
+            display: none;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .knowledge-status {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .knowledge-status {
+                margin-top: 1.5rem;
+            }
+        }
+
+        .knowledge-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-height: 667px) {
+            .knowledge-btn {
+                padding: 0.4rem 0.875rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        .knowledge-btn.know {
+            background: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .knowledge-btn.dont-know {
+            background: var(--warm-red);
+            border: 2px solid var(--warm-red);
+        }
+
+        .knowledge-btn.know:hover {
+            background: #247d5f;
+            transform: scale(1.05);
+        }
+
+        .knowledge-btn.dont-know:hover {
+            background: #a33532;
+            transform: scale(1.05);
+        }
+
+        .exercise-display {
+            background: var(--soft-pink);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--warm-red);
+        }
+
+        @media (min-width: 768px) {
+            .exercise-display {
+                padding: 2rem;
+            }
+        }
+
+        .exercise-instruction {
+            font-size: 0.9rem;
+            color: var(--deep-red);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .exercise-sentence {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.2rem;
+            color: var(--charcoal);
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            word-wrap: break-word;
+        }
+
+        @media (min-width: 768px) {
+            .exercise-sentence {
+                font-size: 1.4rem;
+            }
+        }
+
+        .exercise-hint {
+            color: var(--warm-red);
+            font-weight: 600;
+        }
+
+        .answer-input {
+            background: white !important;
+            border: 3px solid var(--deep-red) !important;
+            font-size: 1.1rem !important;
+            padding: 1rem !important;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .answer-input {
+                font-size: 1.2rem !important;
+            }
+        }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .feedback.correct {
+            background: #E8F5E9;
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .feedback.incorrect {
+            background: #FFEBEE;
+            color: var(--error);
+            border: 2px solid var(--error);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--medium-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.3s ease;
+            background: var(--light-gray);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--warm-red);
+            background: white;
+            box-shadow: 0 4px 12px rgba(193, 64, 61, 0.15);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--charcoal);
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        // Domyślne fiszki
+        const getDefaultFlashcards = () => [
+            {id: 1, category: ['Moduł 1', 'Dane osobowe'], word: 'myślnik', example: 'Moje nazwisko, Perez-Woźniak, pisze się przez myślnik.', translation: 'тире', notes: 'Znak interpunkcyjny używany np. w nazwiskach dwuczłonowych'},
+            {id: 2, category: ['Moduł 1', 'Dane osobowe'], word: 'nazwisko panieńskie', example: 'Jakie jest nazwisko panieńskie Twojej matki?', translation: 'дівоче прізвище', notes: 'Nazwisko kobiety sprzed wyjścia za mąż'},
+            {id: 3, category: ['Moduł 1', 'Dane osobowe'], word: 'mężatka', example: 'Anna jest mężatką od pięciu lat.', translation: 'заміжня', notes: 'Kobieta posiadająca męża'},
+            {id: 4, category: ['Moduł 1', 'Człowiek'], word: 'osobisty', example: 'To jest mój osobisty sukces.', translation: 'особистий', notes: 'Przymiotnik odnoszący się do konkretnej osoby'},
+            {id: 5, category: ['Moduł 1', 'Ogólne'], word: 'osobowy', example: 'Wypełnij formularz osobowy swoimi danymi.', translation: 'особовий', notes: 'Odnoszący się do osób, np. zaimek osobowy lub dowód osobowy'},
+            {id: 6, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'stawiać czoła', example: 'Musimy stawiać czoła trudnościom każdego dnia.', translation: 'протистояти / дивитися в обличчя (проблемам)', notes: 'Mierzyć się z problemami lub wyzwaniami'},
+            {id: 7, category: ['Moduł 1', 'Ogólne'], word: 'konsekwencja', example: 'Każda decyzja ma swoje konsekwencje.', translation: 'наслідок', notes: 'Wynik jakiegoś działania lub zdarzenia'},
+            {id: 8, category: ['Moduł 1', 'Myślenie'], word: 'zastanowić się', example: 'Muszę się chwilę zastanowić przed podjęciem decyzji.', translation: 'замислитися / подумати', notes: 'Poświęcić czas na przemyślenie czegoś'},
+            {id: 9, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'nie zdawać sobie sprawy', example: 'On nie zdaje sobie sprawy z konsekwencji palenia papierosów elektronicznych.', translation: 'не усвідомлювати', notes: 'Nie wiedzieć o czymś lub nie rozumieć czegoś w pełni'},
+            {id: 10, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'popełnianie oszustw', example: 'Popełnianie oszustw podatkowych jest surowo karane.', translation: 'вчинення шахрайства', notes: 'Działanie nieuczciwe, oszukiwanie kogoś'},
+            {id: 11, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'podjąć środki ostrożności', example: 'Warto podjąć środki ostrożności przed daleką podróżą.', translation: 'вжити заходів безпеки', notes: 'Zrobić coś, aby uniknąć niebezpieczeństwa'},
+            {id: 12, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'poufne informacje', example: 'To są poufne informacje, nie możesz ich nikomu zdradzić.', translation: 'конфіденційна інформація', notes: 'Dane, które nie powinny być ujawniane publicznie'}        
+];
+
+
+        function FlashcardApp() {
+            const [flashcards, setFlashcards] = useState(getDefaultFlashcards());
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [isFlipped, setIsFlipped] = useState(false);
+            const [stats, setStats] = useState({
+                reviewed: 0,
+                known: 0,
+                unknown: 0,
+                correct: 0,
+                incorrect: 0
+            });
+            const [selectedCategories, setSelectedCategories] = useState([]);
+            const [selectedChapters, setSelectedChapters] = useState([]);
+            const [showAllCards, setShowAllCards] = useState(false);
+            const [studyMode, setStudyMode] = useState('flip'); // 'flip' or 'quiz'
+            const [direction, setDirection] = useState('pl-ua'); // 'pl-ua' or 'ua-pl'
+            const [userAnswer, setUserAnswer] = useState('');
+            const [feedback, setFeedback] = useState(null);
+            const [markedForReview, setMarkedForReview] = useState([]); // IDs of cards marked for review
+            const [showOnlyReview, setShowOnlyReview] = useState(false); // Toggle to show only marked cards
+
+            useEffect(() => {
+                window.setAppFlashcards = setFlashcards;
+                window.getAppFlashcards = () => flashcards;
+                
+                return () => {
+                    window.setAppFlashcards = null;
+                    window.getAppFlashcards = null;
+                };
+            }, [flashcards]);
+
+            const allCategories = [...new Set(
+                flashcards.flatMap(card => 
+                    Array.isArray(card.category) ? card.category : [card.category]
+                )
+            )].filter(Boolean);
+
+            // Separate chapters from other categories
+            const chapters = allCategories.filter(cat => cat.toLowerCase().includes('rozdział')).sort();
+            const otherCategories = allCategories.filter(cat => !cat.toLowerCase().includes('rozdział')).sort();
+
+            const filteredCards = (() => {
+                let filtered = flashcards;
+                
+                // Apply "review only" filter first
+                if (showOnlyReview) {
+                    filtered = filtered.filter(card => markedForReview.includes(card.id));
+                }
+                
+                // Apply chapter filter
+                if (selectedChapters.length > 0) {
+                    filtered = filtered.filter(card => {
+                        const cardCategories = Array.isArray(card.category) ? card.category : [card.category];
+                        return selectedChapters.some(chapter => cardCategories.includes(chapter));
+                    });
+                }
+                
+                // Apply other category filter
+                if (selectedCategories.length > 0) {
+                    filtered = filtered.filter(card => {
+                        const cardCategories = Array.isArray(card.category) ? card.category : [card.category];
+                        return selectedCategories.some(cat => cardCategories.includes(cat));
+                    });
+                }
+                
+                return filtered;
+            })();
+
+            const currentCard = filteredCards[currentIndex];
+
+            const handleFlip = () => {
+                setIsFlipped(!isFlipped);
+            };
+
+            const handleNext = () => {
+                if (currentIndex < filteredCards.length - 1) {
+                    setCurrentIndex(currentIndex + 1);
+                    setIsFlipped(false);
+                    setUserAnswer('');
+                    setFeedback(null);
+                } else {
+                    alert('To była ostatnia fiszka! 🎉');
+                }
+            };
+
+            const handlePrevious = () => {
+                if (currentIndex > 0) {
+                    setCurrentIndex(currentIndex - 1);
+                    setIsFlipped(false);
+                    setUserAnswer('');
+                    setFeedback(null);
+                }
+            };
+
+            const handleKnow = () => {
+                setStats(prev => ({
+                    ...prev,
+                    reviewed: prev.reviewed + 1,
+                    known: prev.known + 1
+                }));
+                handleNext();
+            };
+
+            const handleDontKnow = () => {
+                // Add to review list automatically
+                if (currentCard && !markedForReview.includes(currentCard.id)) {
+                    setMarkedForReview(prev => [...prev, currentCard.id]);
+                }
+                
+                setStats(prev => ({
+                    ...prev,
+                    reviewed: prev.reviewed + 1,
+                    unknown: prev.unknown + 1
+                }));
+                handleNext();
+            };
+
+            const resetAnswer = () => {
+                setUserAnswer('');
+                setFeedback(null);
+            };
+
+            const shuffleCards = () => {
+                const shuffled = [...filteredCards].sort(() => Math.random() - 0.5);
+                const otherCards = flashcards.filter(card => !filteredCards.includes(card));
+                setFlashcards([...shuffled, ...otherCards]);
+                setCurrentIndex(0);
+                setIsFlipped(false);
+            };
+
+            const handleCategoryToggle = (category) => {
+                setSelectedCategories(prev =>
+                    prev.includes(category)
+                        ? prev.filter(c => c !== category)
+                        : [...prev, category]
+                );
+                setCurrentIndex(0);
+                setIsFlipped(false);
+                setUserAnswer('');
+                setFeedback(null);
+            };
+
+            const handleChapterToggle = (chapter) => {
+                setSelectedChapters(prev =>
+                    prev.includes(chapter)
+                        ? prev.filter(c => c !== chapter)
+                        : [...prev, chapter]
+                );
+                setCurrentIndex(0);
+                setIsFlipped(false);
+                setUserAnswer('');
+                setFeedback(null);
+            };
+
+            const normalizeText = (text) => {
+                return text
+                    .toLowerCase()
+                    .trim()
+                    .replace(/\s+/g, ' ')
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '');
+            };
+
+            const checkAnswer = () => {
+                if (!currentCard || !userAnswer.trim()) return;
+
+                // Determine correct answer based on direction
+                const correctAnswerText = direction === 'pl-ua' 
+                    ? currentCard.translation 
+                    : currentCard.word;
+
+                const correctAnswers = correctAnswerText
+                    .split(';')
+                    .map(ans => normalizeText(ans));
+                
+                const userAnswerNormalized = normalizeText(userAnswer);
+                const isCorrect = correctAnswers.includes(userAnswerNormalized);
+
+                // Automatically add incorrect answers to review list
+                if (!isCorrect && currentCard && !markedForReview.includes(currentCard.id)) {
+                    setMarkedForReview(prev => [...prev, currentCard.id]);
+                }
+
+                setFeedback({
+                    correct: isCorrect,
+                    message: isCorrect 
+                        ? '✓ Świetnie! Poprawna odpowiedź!' 
+                        : `✗ Niepoprawnie. Poprawna odpowiedź: ${correctAnswerText} (dodano do powtórzenia 🔖)`,
+                    notes: currentCard.notes
+                });
+
+                setStats(prev => ({
+                    ...prev,
+                    reviewed: prev.reviewed + 1,
+                    correct: prev.correct + (isCorrect ? 1 : 0),
+                    incorrect: prev.incorrect + (isCorrect ? 0 : 1)
+                }));
+            };
+
+            const handleModeChange = (mode) => {
+                setStudyMode(mode);
+                setCurrentIndex(0);
+                setIsFlipped(false);
+                setUserAnswer('');
+                setFeedback(null);
+            };
+
+            const handleDirectionChange = (newDirection) => {
+                setDirection(newDirection);
+                setCurrentIndex(0);
+                setIsFlipped(false);
+                setUserAnswer('');
+                setFeedback(null);
+            };
+
+            const clearAllMarked = () => {
+                if (window.confirm('Czy na pewno chcesz wyczyścić wszystkie zaznaczone fiszki do powtórzenia?')) {
+                    setMarkedForReview([]);
+                    setShowOnlyReview(false);
+                }
+            };
+
+            const deleteCard = (id) => {
+                if (window.confirm('Czy na pewno chcesz usunąć tę fiszkę?')) {
+                    setFlashcards(flashcards.filter(card => card.id !== id));
+                    if (currentIndex >= flashcards.length - 1) {
+                        setCurrentIndex(Math.max(0, flashcards.length - 2));
+                    }
+                }
+            };
+
+            const progress = filteredCards.length > 0
+                ? ((currentIndex + 1) / filteredCards.length) * 100
+                : 0;
+
+            return (
+                <div className="app-container">
+                    <div className="header">
+                        <h1 className="logo">Polski — Українська</h1>
+                        <p className="tagline">Fiszki do Nauki Słówek</p>
+                    </div>
+
+                    <div className="card">
+                        <h2>📥📤 Import / Eksport</h2>
+                        <div className="import-section">
+                            <p style={{marginBottom: '1rem', color: 'var(--charcoal)'}}>
+                                Wybierz plik Excel z fiszkami lub pobierz szablon
+                            </p>
+                            <div className="file-input-wrapper">
+                                <input 
+                                    type="file" 
+                                    id="excelFileInput" 
+                                    accept=".xlsx,.xls"
+                                    className="file-input"
+                                    onChange={() => window.loadExcelFileFromDOM()}
+                                />
+                                <label htmlFor="excelFileInput" className="file-input-label">
+                                    📂 Wybierz plik Excel
+                                </label>
+                            </div>
+                            <div className="button-group">
+                                <button className="secondary" onClick={() => window.downloadExcelTemplate()}>
+                                    ⬇️ Pobierz szablon Excel
+                                </button>
+                                <button className="secondary" onClick={() => {
+                                    if (window.confirm('Czy na pewno chcesz przywrócić domyślne fiszki? (Wszystkie zaimportowane fiszki zostaną zastąpione)')) {
+                                        setFlashcards(getDefaultFlashcards());
+                                        setCurrentIndex(0);
+                                        setIsFlipped(false);
+                                        setStats({reviewed: 0, known: 0, unknown: 0, correct: 0, incorrect: 0});
+                                        setMarkedForReview([]);
+                                        setShowOnlyReview(false);
+                                        alert('✅ Przywrócono domyślne fiszki!');
+                                    }
+                                }}>
+                                    🔄 Resetuj do domyślnych
+                                </button>
+                            </div>
+                            <div id="importStatus"></div>
+                        </div>
+                    </div>
+
+                    {flashcards.length > 0 && (
+                        <>
+                            {chapters.length > 0 && (
+                                <div className="card">
+                                    <h2>📖 Filtry rozdziałów</h2>
+                                    <div className="category-filter">
+                                        {chapters.map(chapter => (
+                                            <div
+                                                key={chapter}
+                                                className={`category-badge ${selectedChapters.includes(chapter) ? 'active' : ''}`}
+                                                onClick={() => handleChapterToggle(chapter)}
+                                            >
+                                                {chapter}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {otherCategories.length > 0 && (
+                                <div className="card">
+                                    <h2>🏷️ Inne filtry</h2>
+                                    <div className="category-filter">
+                                        {otherCategories.map(cat => (
+                                            <div
+                                                key={cat}
+                                                className={`category-badge ${selectedCategories.includes(cat) ? 'active' : ''}`}
+                                                onClick={() => handleCategoryToggle(cat)}
+                                            >
+                                                {cat}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="card">
+                                <h2>🎯 Tryb nauki</h2>
+                                <div className="button-group">
+                                    <button 
+                                        className={studyMode === 'flip' ? '' : 'secondary'}
+                                        onClick={() => handleModeChange('flip')}
+                                    >
+                                        🔄 Przewracanie fiszek
+                                    </button>
+                                    <button 
+                                        className={studyMode === 'quiz' ? '' : 'secondary'}
+                                        onClick={() => handleModeChange('quiz')}
+                                    >
+                                        ✍️ Wpisywanie odpowiedzi
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <h2>🌐 Kierunek nauki</h2>
+                                <div className="button-group">
+                                    <button 
+                                        className={direction === 'pl-ua' ? '' : 'secondary'}
+                                        onClick={() => handleDirectionChange('pl-ua')}
+                                    >
+                                        🇵🇱 Polski → Українська 🇺🇦
+                                    </button>
+                                    <button 
+                                        className={direction === 'ua-pl' ? '' : 'secondary'}
+                                        onClick={() => handleDirectionChange('ua-pl')}
+                                    >
+                                        🇺🇦 Українська → Polski 🇵🇱
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <h2>📚 Fiszka {currentIndex + 1} / {filteredCards.length}</h2>
+                                <div className="progress-bar">
+                                    <div className="progress-fill" style={{width: `${progress}%`}}></div>
+                                </div>
+                                <div style={{marginBottom: '1.5rem', textAlign: 'center'}}>
+                                    <button 
+                                        className="secondary" 
+                                        onClick={shuffleCards}
+                                        style={{padding: '0.5rem 1.5rem', fontSize: '0.9rem'}}
+                                    >
+                                        🔀 Wymieszaj fiszki
+                                    </button>
+                                </div>
+
+                                {currentCard && (
+                                    <>
+                                        {studyMode === 'flip' ? (
+                                            // FLIP MODE - przewracanie fiszek
+                                            <>
+                                                <div className="flashcard-container">
+                                                    <div 
+                                                        className={`flashcard ${isFlipped ? 'flipped' : ''}`}
+                                                        onClick={handleFlip}
+                                                    >
+                                                        <div className="flashcard-face flashcard-front">
+                                                            <div className="flag-icon">{direction === 'pl-ua' ? '🇵🇱' : '🇺🇦'}</div>
+                                                            <div className="flashcard-word">
+                                                                {direction === 'pl-ua' ? currentCard.word : currentCard.translation}
+                                                            </div>
+                                                            {direction === 'pl-ua' && (
+                                                                <div className="flashcard-example">
+                                                                    {currentCard.example}
+                                                                </div>
+                                                            )}
+                                                            {currentCard.category && (
+                                                                <div className="flashcard-hint">
+                                                                    {Array.isArray(currentCard.category) 
+                                                                        ? currentCard.category.join(', ') 
+                                                                        : currentCard.category}
+                                                                </div>
+                                                            )}
+                                                            <div className="flip-hint">
+                                                                👆 Kliknij, aby zobaczyć tłumaczenie
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flashcard-face flashcard-back">
+                                                            <div className="flag-icon">{direction === 'pl-ua' ? '🇺🇦' : '🇵🇱'}</div>
+                                                            <div className="flashcard-translation">
+                                                                {direction === 'pl-ua' ? currentCard.translation : currentCard.word}
+                                                            </div>
+                                                            {direction === 'ua-pl' && currentCard.example && (
+                                                                <div className="flashcard-example">
+                                                                    {currentCard.example}
+                                                                </div>
+                                                            )}
+                                                            {currentCard.notes && (
+                                                                <div className="flashcard-example">
+                                                                    {currentCard.notes}
+                                                                </div>
+                                                            )}
+                                                            <div className="flip-hint">
+                                                                👆 Kliknij, aby wrócić
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {isFlipped && (
+                                                    <div className="knowledge-status">
+                                                        <button 
+                                                            className="knowledge-btn dont-know"
+                                                            onClick={handleDontKnow}
+                                                        >
+                                                            🔖 Nie znam - do powtórzenia
+                                                        </button>
+                                                        <button 
+                                                            className="knowledge-btn know"
+                                                            onClick={handleKnow}
+                                                        >
+                                                            ✓ Znam
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            // QUIZ MODE - wpisywanie odpowiedzi
+                                            <>
+                                                <div className="exercise-display">
+                                                    <p className="exercise-instruction">
+                                                        {direction === 'pl-ua' 
+                                                            ? 'Wpisz tłumaczenie na ukraiński:' 
+                                                            : 'Wpisz tłumaczenie na polski:'}
+                                                    </p>
+                                                    <p className="exercise-sentence">
+                                                        {direction === 'pl-ua' ? '🇵🇱' : '🇺🇦'} {direction === 'pl-ua' ? currentCard.word : currentCard.translation}
+                                                    </p>
+                                                    {direction === 'pl-ua' && currentCard.example && (
+                                                        <div className="flashcard-example" style={{fontStyle: 'italic', fontSize: '1rem', marginTop: '1rem'}}>
+                                                            {currentCard.example}
+                                                        </div>
+                                                    )}
+                                                    {currentCard.category && (
+                                                        <p className="exercise-hint" style={{marginTop: '1rem'}}>
+                                                            📂 {Array.isArray(currentCard.category) 
+                                                                ? currentCard.category.join(', ') 
+                                                                : currentCard.category}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="input-group">
+                                                    <label>
+                                                        {direction === 'pl-ua' 
+                                                            ? 'Twoja odpowiedź (українська):' 
+                                                            : 'Twoja odpowiedź (polski):'}
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        className="answer-input"
+                                                        value={userAnswer}
+                                                        onChange={(e) => setUserAnswer(e.target.value)}
+                                                        onKeyPress={(e) => e.key === 'Enter' && !feedback && checkAnswer()}
+                                                        placeholder="Wpisz tłumaczenie..."
+                                                        disabled={feedback !== null}
+                                                    />
+                                                </div>
+
+                                                {feedback && (
+                                                    <div className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}>
+                                                        <p style={{marginBottom: '0.5rem', fontSize: '1.1rem'}}>
+                                                            {feedback.message}
+                                                        </p>
+                                                        {feedback.notes && (
+                                                            <p style={{fontSize: '0.9rem', lineHeight: '1.6', marginTop: '0.75rem'}}>
+                                                                📝 {feedback.notes}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                <div className="button-group">
+                                                    {!feedback ? (
+                                                        <>
+                                                            <button onClick={checkAnswer}>
+                                                                ✓ Sprawdź
+                                                            </button>
+                                                            <button className="secondary" onClick={resetAnswer}>
+                                                                ↻ Wyczyść
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <button onClick={handleNext}>
+                                                            → Następna fiszka
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+
+                                        <div className="navigation-buttons">
+                                            <button 
+                                                className="secondary"
+                                                onClick={handlePrevious}
+                                                disabled={currentIndex === 0}
+                                            >
+                                                ← Poprzednia
+                                            </button>
+                                            {studyMode === 'flip' && !isFlipped && (
+                                                <button onClick={handleNext}>
+                                                    Następna →
+                                                </button>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {markedForReview.length > 0 && (
+                                <div className="card">
+                                    <h2>🔖 Fiszki do powtórzenia ({markedForReview.length})</h2>
+                                    <div className="button-group">
+                                        <button 
+                                            className={showOnlyReview ? '' : 'secondary'}
+                                            onClick={() => {
+                                                setShowOnlyReview(!showOnlyReview);
+                                                setCurrentIndex(0);
+                                                setIsFlipped(false);
+                                                setUserAnswer('');
+                                                setFeedback(null);
+                                            }}
+                                        >
+                                            {showOnlyReview ? '📌 Pokazuję tylko zaznaczone' : '👁️ Pokaż tylko zaznaczone'}
+                                        </button>
+                                        <button 
+                                            className="secondary"
+                                            onClick={clearAllMarked}
+                                        >
+                                            🗑️ Wyczyść wszystkie
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="card">
+                                <h2>📊 Statystyki</h2>
+                                {studyMode === 'flip' ? (
+                                    <div className="stats-grid">
+                                        <div className="stat-card">
+                                            <span className="stat-value">{filteredCards.length}</span>
+                                            <span className="stat-label">Wszystkie</span>
+                                        </div>
+                                        <div className="stat-card">
+                                            <span className="stat-value">{stats.reviewed}</span>
+                                            <span className="stat-label">Przejrzane</span>
+                                        </div>
+                                        <div className="stat-card">
+                                            <span className="stat-value">{stats.known}</span>
+                                            <span className="stat-label">Znane</span>
+                                        </div>
+                                        <div className="stat-card">
+                                            <span className="stat-value">{stats.unknown}</span>
+                                            <span className="stat-label">Nieznane</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="stats-grid">
+                                        <div className="stat-card">
+                                            <span className="stat-value">{filteredCards.length}</span>
+                                            <span className="stat-label">Wszystkie</span>
+                                        </div>
+                                        <div className="stat-card">
+                                            <span className="stat-value">{stats.reviewed}</span>
+                                            <span className="stat-label">Razem</span>
+                                        </div>
+                                        <div className="stat-card">
+                                            <span className="stat-value">{stats.correct}</span>
+                                            <span className="stat-label">Poprawne</span>
+                                        </div>
+                                        <div className="stat-card">
+                                            <span className="stat-value">{stats.incorrect}</span>
+                                            <span className="stat-label">Błędne</span>
+                                        </div>
+                                        <div className="stat-card">
+                                            <span className="stat-value">
+                                                {stats.reviewed > 0 ? Math.round((stats.correct / stats.reviewed) * 100) : 0}%
+                                            </span>
+                                            <span className="stat-label">Skuteczność</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="card">
+                                <h2>📝 Zarządzaj fiszkami</h2>
+                                <div className="button-group">
+                                    <button className="secondary" onClick={() => setShowAllCards(!showAllCards)}>
+                                        {showAllCards ? '↑ Ukryj listę' : '↓ Pokaż wszystkie'}
+                                    </button>
+                                    <button onClick={() => window.downloadExcelTemplate()}>
+                                        💾 Eksportuj do Excel
+                                    </button>
+                                </div>
+
+                                {showAllCards && (
+                                    <div style={{marginTop: '1.5rem'}}>
+                                        {flashcards.map((card, idx) => (
+                                            <div key={card.id} style={{
+                                                padding: '1rem',
+                                                marginBottom: '0.75rem',
+                                                background: 'var(--light-gray)',
+                                                borderRadius: '8px',
+                                                borderLeft: '4px solid var(--warm-red)'
+                                            }}>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem'}}>
+                                                    <div style={{flex: 1, minWidth: '200px'}}>
+                                                        <strong>#{idx + 1}</strong> {card.word} → {card.translation}
+                                                        <br/>
+                                                        <small style={{color: 'var(--warm-red)'}}>
+                                                            {Array.isArray(card.category) ? card.category.join(', ') : card.category}
+                                                        </small>
+                                                    </div>
+                                                    <button 
+                                                        className="secondary" 
+                                                        style={{padding: '0.5rem 1rem', fontSize: '0.85rem'}}
+                                                        onClick={() => deleteCard(card.id)}
+                                                    >
+                                                        🗑️ Usuń
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<FlashcardApp />, document.getElementById('root'));
+    </script>
+
+    <script>
+        function parseCategories(categoryString) {
+            if (!categoryString) return [];
+            
+            if (typeof categoryString === 'string') {
+                return categoryString.split(';').map(cat => cat.trim()).filter(Boolean);
+            }
+            
+            return [categoryString];
+        }
+        
+        window.loadExcelFileFromDOM = function() {
+            const setFlashcards = window.setAppFlashcards;
+            if (!setFlashcards) {
+                window.showStatus('❌ Błąd: Aplikacja nie jest gotowa do ładowania.', 'error');
+                return;
+            }
+            
+            const fileInput = document.getElementById('excelFileInput');
+            
+            if (!fileInput.files || !fileInput.files[0]) {
+                window.showStatus('Proszę wybrać plik Excel!', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    const sheetNames = Object.keys(workbook.Sheets);
+                    if (sheetNames.length === 0) {
+                        window.showStatus('Nie znaleziono arkuszy w pliku!', 'error');
+                        setFlashcards([]);
+                        return;
+                    }
+                    
+                    const firstSheetName = sheetNames[0];
+                    const firstSheet = workbook.Sheets[firstSheetName];
+                    
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                    
+                    const newCards = [];
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (row.length >= 5 && row[3] && row[4]) {
+                            // Combine chapter and category into single array
+                            const categories = [];
+                            if (row[1]) categories.push(row[1].toString().trim()); // Chapter
+                            if (row[2]) {
+                                const cats = parseCategories(row[2]);
+                                categories.push(...cats);
+                            }
+                            
+                            newCards.push({
+                                id: parseInt(row[0]) || i,
+                                category: categories,
+                                word: row[3].toString().trim() || '',
+                                example: row[4].toString().trim() || '',
+                                translation: row[5].toString().trim() || '',
+                                notes: row[6] ? row[6].toString().trim() : ''
+                            });
+                        }
+                    }
+                    
+                    if (newCards.length === 0) {
+                        window.showStatus('Nie znaleziono fiszek w pliku!', 'error');
+                        setFlashcards([]);
+                        return;
+                    }
+                    
+                    setFlashcards(newCards);
+                    
+                    window.showStatus(`✅ Wczytano ${newCards.length} fiszek z Excel!`, 'success');
+                    
+                } catch (error) {
+                    window.showStatus('❌ Błąd podczas wczytywania pliku: ' + error.message, 'error');
+                    console.error(error);
+                }
+            };
+            
+            reader.onerror = function() {
+                window.showStatus('❌ Błąd podczas odczytu pliku!', 'error');
+            };
+            
+            reader.readAsArrayBuffer(file);
+        };
+
+        window.showStatus = function(message, type) {
+            const statusDiv = document.getElementById('importStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = message;
+            
+            if (type === 'success') {
+                statusDiv.style.background = '#E8F5E9';
+                statusDiv.style.border = '2px solid #4CAF50';
+                statusDiv.style.color = '#2D7D5E';
+            } else if (type === 'error') {
+                statusDiv.style.background = '#FFEBEE';
+                statusDiv.style.border = '2px solid #f44336';
+                statusDiv.style.color = '#C1403D';
+            }
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        };
+        
+        window.downloadExcelTemplate = function() {
+            const currentCards = (window.getAppFlashcards && window.getAppFlashcards()) || [];
+
+            const wb = XLSX.utils.book_new();
+            
+            const wsData = [
+                ['ID', 'Rozdział', 'Kategoria', 'Słowo (Polski)', 'Przykład (Polski)', 'Tłumaczenie (Українська)', 'Notatki (Українська)']
+            ];
+            
+            if (currentCards.length > 0) {
+                currentCards.forEach(card => {
+                    const categories = Array.isArray(card.category) ? card.category : [card.category];
+                    // Separate chapter from other categories
+                    const chapter = categories.find(cat => cat && cat.toLowerCase().includes('rozdział')) || '';
+                    const otherCategories = categories.filter(cat => cat && !cat.toLowerCase().includes('rozdział')).join(';');
+                    
+                    wsData.push([
+                        card.id,
+                        chapter,
+                        otherCategories,
+                        card.word,
+                        card.example,
+                        card.translation,
+                        card.notes || ''
+                    ]);
+                });
+            } else {
+                // Rozdział pierwszy i zerowy - Błędy
+                wsData.push([1, 'Rozdział pierwszy i zerowy', 'Błędy', 'jesteś w błędzie', 'Myślę, że jesteś w błędzie - to nie jest dobra metoda.', 'ти помиляєшся', 'Wyrażenie używane przy korekcie błędnego stwierdzenia']);
+                wsData.push([2, 'Rozdział pierwszy i zerowy', 'Błędy', 'przyznać się do błędu', 'Trzeba przyznać się do błędu i go poprawić.', 'визнати помилку', 'Ważna umiejętność przyznawania się do błędów']);
+                wsData.push([3, 'Rozdział pierwszy i zerowy', 'Błędy', 'wybacz mi mój błąd', 'Wybacz mi mój błąd - następnym razem będę uważniejszy.', 'вибач мені мою помилку', 'Przeprosiny za popełniony błąd']);
+                wsData.push([4, 'Rozdział pierwszy i zerowy', 'Błędy', 'uczymy się na błędach', 'Nie martw się - uczymy się na błędach.', 'ми вчимося на помилках', 'Pozytywne podejście do błędów']);
+                wsData.push([5, 'Rozdział pierwszy i zerowy', 'Błędy', 'nie wprowadzaj mnie w błąd', 'Proszę, nie wprowadzaj mnie w błąd - powiedz prawdę.', 'не введи мене в оману', 'Prośba o uczciwość']);
+                wsData.push([6, 'Rozdział pierwszy i zerowy', 'Błędy', 'wyprowadź mnie z błędu', 'Jeśli się mylę, wyprowadź mnie z błędu.', 'виправ мене', 'Prośba o korektę']);
+                
+                // Metody nauki
+                wsData.push([7, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'indywidualnie', 'Wolę uczyć się indywidualnie.', 'індивідуально', 'Nauka w pojedynkę']);
+                wsData.push([8, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'w grupie', 'Lubimy pracować w grupie.', 'в групі', 'Nauka grupowa']);
+                wsData.push([9, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'poprzez bezpośredni kontakt', 'Najlepiej uczę się poprzez bezpośredni kontakt z nauczycielem.', 'через безпосередній контакт', 'Face-to-face learning']);
+                wsData.push([10, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'skuteczny', 'To jest bardzo skuteczny sposób nauki.', 'ефективний', 'Przynoszący dobre rezultaty']);
+                wsData.push([11, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'intensywny', 'Intensywny kurs trwa dwa tygodnie.', 'інтенсивний', 'Nauka w szybkim tempie']);
+                wsData.push([12, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'z partnerem', 'Ćwiczę konwersacje z partnerem.', 'з партнером', 'Nauka w parze']);
+                wsData.push([13, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'biegle', 'Ona mówi biegle po polsku.', 'вільно, бездоганно', 'Płynnie, bez problemów']);
+                wsData.push([14, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'nietypowe', 'Używam nietypowych metod zapamiętywania.', 'нетипові, незвичайні', 'Oryginalne, niestandardowe']);
+                wsData.push([15, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'efektywna metoda nauki', 'Fiszki to bardzo efektywna metoda nauki słówek.', 'ефективний метод навчання', 'Metoda przynosząca dobre wyniki']);
+                wsData.push([16, 'Rozdział pierwszy i zerowy', 'Metody nauki', 'powtarzać na głos', 'Należy powtarzać na głos nowe słowa.', 'повторювати вголос', 'Głośne mówienie podczas nauki']);
+                
+                // Typy uczniów
+                wsData.push([17, 'Rozdział pierwszy i zerowy', 'Typy uczniów', 'wzrokowiec', 'Jestem wzrokowcem - lubię uczyć się z obrazków.', 'візуал', 'Osoba ucząca się wzrokowo']);
+                wsData.push([18, 'Rozdział pierwszy i zerowy', 'Typy uczniów', 'słuchowiec', 'Jako słuchowiec wolę słuchać podcastów.', 'аудіал', 'Osoba ucząca się przez słuchanie']);
+                
+                // Relaks i stres
+                wsData.push([19, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'ćwiczenia relaksacyjne', 'Codziennie robię ćwiczenia relaksacyjne.', 'релаксаційні вправи', 'Ćwiczenia na odprężenie']);
+                wsData.push([20, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'aromatyczna kąpiel', 'Aromatyczna kąpiel pomaga mi się zrelaksować.', 'ароматична ванна', 'Kąpiel z olejkami zapachowymi']);
+                wsData.push([21, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'głębokie oddychanie', 'Głębokie oddychanie uspokaja nerwy.', 'глибоке дихання', 'Technika relaksacyjna']);
+                wsData.push([22, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'jestem zdenerwowany', 'Jestem zdenerwowany przed egzaminem.', 'я знервований/знервована', 'Wyrażenie stresu lub niepokoju']);
+                wsData.push([23, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'naturalne metody', 'Preferuję naturalne metody radzenia sobie ze stresem.', 'природні методи', 'Metody bez używania leków']);
+                wsData.push([24, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'masaż karku', 'Masaż karku pomaga na napięcie.', 'масаж шиї', 'Rozluźnienie mięśni szyi']);
+                wsData.push([25, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'być optymistą', 'Staram się być optymistą w trudnych sytuacjach.', 'бути оптимістом', 'Pozytywne nastawienie do życia']);
+                wsData.push([26, 'Rozdział pierwszy i zerowy', 'Relaks i stres', 'wygrać walkę ze stresem', 'Można wygrać walkę ze stresem dzięki odpowiednim technikom.', 'перемогти стрес', 'Pokonać stres']);
+                
+                // Koncentracja
+                wsData.push([27, 'Rozdział pierwszy i zerowy', 'Koncentracja', 'koncentracja', 'Do nauki potrzebna jest dobra koncentracja.', 'концентрація', 'Skupienie uwagi']);
+                wsData.push([28, 'Rozdział pierwszy i zerowy', 'Koncentracja', 'skoncentruj się', 'Skoncentruj się na zadaniu!', 'зосередься', 'Rozkaz/prośba o skupienie uwagi']);
+                wsData.push([29, 'Rozdział pierwszy i zerowy', 'Koncentracja', 'świeże powietrze', 'Świeże powietrze pomaga mi myśleć jasno.', 'свіже повітря', 'Powietrze na zewnątrz, wietrzenie']);
+                wsData.push([30, 'Rozdział pierwszy i zerowy', 'Koncentracja', 'męczyć się', 'Zaczynam się męczyć - potrzebuję przerwy.', 'втомлюватися', 'Odczuwać zmęczenie']);
+                
+                // Nauka i egzaminy
+                wsData.push([31, 'Rozdział pierwszy i zerowy', 'Nauka i egzaminy', 'porównywać się z innymi', 'Nie powinnaś porównywać się z innymi.', 'порівнювати себе з іншими', 'Zestawiać swoje osiągnięcia z cudzymi']);
+                wsData.push([32, 'Rozdział pierwszy i zerowy', 'Nauka i egzaminy', 'zrobić sobie przerwę', 'Musisz zrobić sobie przerwę i odpocząć.', 'зробити собі перерву', 'Chwila odpoczynku podczas pracy']);
+                wsData.push([33, 'Rozdział pierwszy i zerowy', 'Nauka i egzaminy', 'iść spać', 'Jest już późno, muszę iść spać.', 'йти спати', 'Kłaść się do łóżka']);
+                wsData.push([34, 'Rozdział pierwszy i zerowy', 'Nauka i egzaminy', 'zdać egzamin', 'Gratuluję! Udało ci się zdać egzamin.', 'скласти іспит', 'Pomyślnie ukończyć test']);
+                wsData.push([35, 'Rozdział pierwszy i zerowy', 'Nauka i egzaminy', 'czytałam coś ciekawego', 'Czytałam coś ciekawego o tej metodzie.', 'я читала щось цікаве', 'Natknąć się na interesującą informację']);
+                
+                // Zwroty konwersacyjne
+                wsData.push([36, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'wyobraź sobie', 'Wyobraź sobie, że przyszedł bez zaproszenia!', 'уяви собі', 'Wykrzyknienie przy opowiadaniu o czymś zaskakującym lub oburzającym']);
+                wsData.push([37, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'przepraszam, że przerywam', 'Przepraszam, że przerywam, ale mam pytanie.', 'вибачте, що перебиваю', 'Grzeczne wtrącenie się do rozmowy']);
+                wsData.push([38, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'poważnie?', 'Naprawdę to zrobiłeś? Poważnie?', 'серйозно?', 'Wyrażenie zdziwienia lub niedowierzania']);
+                wsData.push([39, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'chodzi o to, że/żeby', 'Chodzi o to, że nie mam czasu dzisiaj.', 'справа в тому, що / йдеться про те, щоб', 'Wyjaśnienie istoty problemu']);
+                wsData.push([40, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'przepraszam, ale trochę się spieszę', 'Przepraszam, ale trochę się spieszę - pogadamy później.', 'вибачте, але я трохи поспішаю', 'Grzeczne zakończenie rozmowy']);
+                wsData.push([41, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'niestety musimy już iść', 'Niestety musimy już iść - dziękujemy za miły wieczór.', 'на жаль, нам вже треба йти', 'Pożegnanie, gdy trzeba wychodzić']);
+                wsData.push([42, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'no i co dalej?', 'Opowiadałeś o swoim wyjeździe... no i co dalej?', 'ну і що далі?', 'Zachęta do kontynuowania opowieści']);
+                wsData.push([43, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'czytałam gdzieś', 'Czytałam gdzieś, że ta metoda jest skuteczna.', 'я читала десь', 'Powołanie się na nieznaną dokładnie źródło']);
+                
+                // Wyrażenia wprowadzające
+                wsData.push([44, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'a propos', 'A propos, czy widziałeś ten film?', 'до речі', 'Przejście do nowego tematu']);
+                wsData.push([45, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'tak mi się wydaje', 'Tak mi się wydaje, ale nie jestem pewna.', 'мені так здається', 'Wyrażenie niepewności opinii']);
+                wsData.push([46, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'nie mam pojęcia', 'Nie mam pojęcia, jak to zrobić.', 'не маю поняття / не знаю', 'Całkowity brak wiedzy']);
+                wsData.push([47, 'Rozdział pierwszy i zerowy', 'Zwroty konwersacyjne', 'problem polega na tym, że', 'Problem polega na tym, że nie ma miejsc.', 'проблема полягає в тому, що', 'Wskazanie istoty problemu']);
+                
+                // Wielojęzyczność i edukacja
+                wsData.push([48, 'Rozdział pierwszy i zerowy', 'Wielojęzyczność i edukacja', 'wielojęzyczność', 'Wielojęzyczność to duża zaleta na rynku pracy.', 'багатомовність', 'Znajomość wielu języków']);
+                wsData.push([49, 'Rozdział pierwszy i zerowy', 'Wielojęzyczność i edukacja', 'w ramach (+ dopełniacz)', 'W ramach kursu mamy dodatkowe zajęcia.', 'в рамках (+ родовий)', 'W zakresie, w obrębie']);
+                wsData.push([50, 'Rozdział pierwszy i zerowy', 'Wielojęzyczność i edukacja', 'rozwijać kreatywność', 'Te ćwiczenia rozwijają kreatywność.', 'розвивати креативність', 'Pobudzać twórcze myślenie']);
+                wsData.push([51, 'Rozdział pierwszy i zerowy', 'Wielojęzyczność i edukacja', 'ludzie o różnych korzeniach', 'W naszej klasie są ludzie o różnych korzeniach.', 'люди з різним корінням', 'Osoby z różnych kultur']);
+                wsData.push([52, 'Rozdział pierwszy i zerowy', 'Wielojęzyczność i edukacja', 'atmosfera jest fantastyczna', 'Na zajęciach atmosfera jest fantastyczna.', 'атмосфера фантастична', 'Bardzo dobry nastrój, klimat']);
+                wsData.push([53, 'Rozdział pierwszy i zerowy', 'Wielojęzyczność i edukacja', 'lektorzy są wymagający', 'Lektorzy są wymagający, ale sprawiedliwi.', 'викладачі вимогливі', 'Nauczyciele mają wysokie standardy']);
+                wsData.push([54, 'Rozdział pierwszy i zerowy', 'Wielojęzyczność i edukacja', 'nic nie przychodzi mi do głowy', 'Nic nie przychodzi mi do głowy - nie wiem, co powiedzieć.', 'нічого не спадає на думку', 'Brak pomysłów']);
+                
+                // Czasowniki z biernikiem
+                wsData.push([55, 'Rozdział pierwszy i zerowy', 'Czasowniki z biernikiem', 'pytać o (+ biernik)', 'Pytam o szczegóły kursu.', 'питати про (+ знахідний)', 'Pytać o coś']);
+                wsData.push([56, 'Rozdział pierwszy i zerowy', 'Czasowniki z biernikiem', 'prosić o (+ biernik)', 'Proszę o pomoc i uwagę.', 'просити про (+ знахідний)', 'Prosić o coś']);
+                wsData.push([57, 'Rozdział pierwszy i zerowy', 'Czasowniki z biernikiem', 'chodzi o (+ biernik)', 'Chodzi o niego, a nie o za wysoką cenę.', 'йдеться про (+ знахідний)', 'Dotyczyć kogoś/czegoś']);
+                wsData.push([58, 'Rozdział pierwszy i zerowy', 'Czasowniki z biernikiem', 'jechać na (+ biernik)', 'Jadę na wakacje do Grecji.', 'їхати на (+ знахідний)', 'Jechać dokądś']);
+                wsData.push([59, 'Rozdział pierwszy i zerowy', 'Czasowniki z biernikiem', 'iść na (+ biernik)', 'Idziemy dziś wieczorem na film.', 'йти на (+ знахідний)', 'Iść na wydarzenie']);
+                wsData.push([60, 'Rozdział pierwszy i zerowy', 'Czasowniki z biernikiem', 'grać w (+ biernik)', 'Dzieci grają w piłkę na boisku.', 'грати в (+ знахідний)', 'Grać w grę/sport']);
+                wsData.push([61, 'Rozdział pierwszy i zerowy', 'Czasowniki z biernikiem', 'nosić (+ biernik)', 'On zawsze nosi elegancki garnitur.', 'носити (+ знахідний)', 'Mieć ubranie na sobie']);
+                
+                // Idiomy
+                wsData.push([62, 'Rozdział pierwszy i zerowy', 'Idiomy', 'mieć w głowie groch z kapustą', 'Po całym dniu nauki mam w głowie groch z kapustą.', 'мати кашу в голові', 'Być zagmatwanym, mieć mętlik w głowie']);
+                wsData.push([63, 'Rozdział pierwszy i zerowy', 'Idiomy', 'łamać sobie język', 'Łamię sobie język na tych polskich słowach!', 'ламати собі язика', 'Mieć trudność z wymową']);
+                wsData.push([64, 'Rozdział pierwszy i zerowy', 'Idiomy', 'siedzieć jak na szpilkach', 'Siedziałam jak na szpilkach czekając na wyniki.', 'сидіти як на голках', 'Być bardzo zdenerwowanym, niecierpliwym']);
+                wsData.push([65, 'Rozdział pierwszy i zerowy', 'Idiomy', 'nerwy ze stali', 'Musisz mieć nerwy ze stali, żeby to wytrzymać.', 'нерви зі сталі / залізні нерви', 'Być bardzo spokojnym, opanowanym']);
+                
+                // Rozdział drugi - ubrania
+                wsData.push([66, 'Rozdział drugi', 'Ubrania i moda', 'wełniany szalik', 'Mam na sobie wełniany szalik.', 'вовняний шарф', 'Szalik z wełny']);
+                wsData.push([67, 'Rozdział drugi', 'Ubrania i moda', 'ciemne dżinsy', 'Dzisiaj noszę ciemne dżinsy.', 'темні джинси', 'Spodnie jeansowe w ciemnym kolorze']);
+                wsData.push([68, 'Rozdział drugi', 'Ubrania i moda', 'za krótki podkoszulek', 'Ten podkoszulek jest za krótki.', 'занадто короткa футболка', 'Koszulka noszona pod innym ubraniem']);
+                wsData.push([69, 'Rozdział drugi', 'Ubrania i moda', 'czasopismo', 'Czytam ciekawe czasopismo o modzie.', 'журнал', 'Magazyn, periodyk']);
+                wsData.push([70, 'Rozdział drugi', 'Ubrania i moda', 'za duże dresy', 'Te dresy są za duże na mnie.', 'занадто великий спортивний костюм', 'Strój sportowy - zbyt luźny']);
+                wsData.push([71, 'Rozdział drugi', 'Ubrania i moda', 'okulary przeciwsłoneczne', 'W lecie zawsze noszę okulary przeciwsłoneczne.', 'сонцезахисні окуляри', 'Okulary chroniące przed słońcem']);
+                wsData.push([72, 'Rozdział drugi', 'Ubrania i moda', 'oddać do organizacji charytatywnej', 'Te stare ubrania oddam do organizacji charytatywnej.', 'віддати в благодійну організацію', 'Przekazać na cele dobroczynne']);
+                
+                // Rozdział drugi - wygląd i uroda
+                wsData.push([73, 'Rozdział drugi', 'Uroda i wygląd', 'wzorzec urody', 'Współczesny wzorzec urody jest nierealistyczny.', 'стандарт краси', 'Ideał piękna w społeczeństwie']);
+                wsData.push([74, 'Rozdział drugi', 'Uroda i wygląd', 'symetryczna twarz', 'Ma bardzo symetryczną twarz.', 'симетричне обличчя', 'Twarz o harmonijnych proporcjach']);
+                wsData.push([75, 'Rozdział drugi', 'Uroda i wygląd', 'asymetria ciała', 'Lekka asymetria ciała jest całkowicie normalna.', 'асиметрія тіла', 'Brak idealnej symetrii w budowie ciała']);
+                wsData.push([76, 'Rozdział drugi', 'Uroda i wygląd', 'autorytet', 'Profesor ma duży autorytet wśród studentów.', 'авторитет', 'Szacunek, uznanie, powaga']);
+                wsData.push([77, 'Rozdział drugi', 'Uroda i wygląd', 'przedstawiać', 'Pozwól, że przedstawię ci moją koleżankę.', 'представляти', 'Prezentować kogoś, zapoznawać']);
+                wsData.push([78, 'Rozdział drugi', 'Uroda i wygląd', 'długoterminowe relacje', 'Długoterminowe relacje wymagają zaufania.', 'довгострокові відносини', 'Związki trwające długo']);
+                wsData.push([79, 'Rozdział drugi', 'Uroda i wygląd', 'krótkoterminowe relacje', 'Krótkoterminowe relacje to nie dla mnie.', 'короткострокові відносини', 'Związki na krótki czas']);
+                wsData.push([80, 'Rozdział drugi', 'Uroda i wygląd', 'mężczyzna średniego wzrostu', 'On jest mężczyzną średniego wzrostu.', 'чоловік середнього зросту', 'Ani wysoki, ani niski']);
+                wsData.push([81, 'Rozdział drugi', 'Uroda i wygląd', 'dominacja', 'W związku nie powinna być dominacja jednej osoby.', 'домінація', 'Przewaga, panowanie']);
+                wsData.push([82, 'Rozdział drugi', 'Uroda i wygląd', 'podbródek', 'Ma mocno zarysowany podbródek.', 'підборіддя', 'Dolna część twarzy']);
+                wsData.push([83, 'Rozdział drugi', 'Uroda i wygląd', 'jędrny', 'Regularne ćwiczenia sprawiają, że ciało jest jędrne.', 'пружний, підтягнутий', 'Napięty, sprężysty']);
+                wsData.push([84, 'Rozdział drugi', 'Uroda i wygląd', 'wyraziste oczy', 'Ma piękne, wyraziste oczy.', 'виразні очі', 'Oczy o intensywnym spojrzeniu']);
+                wsData.push([85, 'Rozdział drugi', 'Uroda i wygląd', 'zarost', 'Nosi modny, krótki zarost.', 'борода, щетина', 'Włosy na twarzy']);
+                wsData.push([86, 'Rozdział drugi', 'Uroda i wygląd', 'atrybut', 'Korona to atrybut władzy królewskiej.', 'атрибут', 'Cecha charakterystyczna, symbol']);
+                wsData.push([87, 'Rozdział drugi', 'Uroda i wygląd', 'systematyczne badania', 'Przeprowadzono systematyczne badania nad tym zjawiskiem.', 'систематичні дослідження', 'Regularne, uporządkowane badania naukowe']);
+                wsData.push([88, 'Rozdział drugi', 'Uroda i wygląd', 'zgrabny', 'Ma zgrabną sylwetkę dzięki sportowi.', 'стрункий, стрункий', 'O proporcjonalnej, ładnej budowie']);
+                wsData.push([89, 'Rozdział drugi', 'Uroda i wygląd', 'bez zmarszczek', 'Jej skóra jest gładka, bez zmarszczek.', 'без зморшок', 'Młodo wyglądająca skóra']);
+                wsData.push([90, 'Rozdział drugi', 'Uroda i wygląd', 'nieproporcjonalnie krótsze', 'Jedna noga jest nieproporcjonalnie krótsza.', 'непропорційно коротший', 'Zbyt krótkie w porównaniu']);
+                wsData.push([91, 'Rozdział drugi', 'Uroda i wygląd', 'coraz szczuplejsza', 'Modelki są coraz szczuplejsze.', 'дедалі стрункіша', 'Stopniowo chudnąca']);
+                wsData.push([92, 'Rozdział drugi', 'Uroda i wygląd', 'dynamiczny chód', 'Ma energiczny, dynamiczny chód.', 'динамічна хода', 'Pewny, żwawy sposób chodzenia']);
+                wsData.push([93, 'Rozdział drugi', 'Uroda i wygląd', 'lśniące włosy', 'Ma piękne, lśniące włosy.', 'блискуче волосся', 'Błyszczące, zdrowe włosy']);
+                wsData.push([94, 'Rozdział drugi', 'Uroda i wygląd', 'przeciętna twarz', 'Ma przeciętną twarz, bez wyróżniających cech.', 'пересічне обличчя', 'Typowa, zwykła twarz']);
+                wsData.push([95, 'Rozdział drugi', 'Uroda i wygląd', 'typowe wymiary', 'To ubranie ma typowe wymiary.', 'типові розміри', 'Standardowe rozmiary']);
+                wsData.push([96, 'Rozdział drugi', 'Uroda i wygląd', 'na wiele sposobów', 'Piękno można osiągnąć na wiele sposobów.', 'красивим можна бути багатьма способами', 'Różnorodność piękna']);
+                wsData.push([97, 'Rozdział drugi', 'Uroda i wygląd', 'być kojarzonym z', 'Wysoki wzrost jest kojarzony z sukcesem.', 'асоціюватися з', 'Być łączonym w myślach z czymś']);
+                wsData.push([98, 'Rozdział drugi', 'Uroda i wygląd', 'pasywność', 'Jego pasywność jest problemem w pracy grupowej.', 'пасивність', 'Bierność, brak inicjatywy']);
+                wsData.push([99, 'Rozdział drugi', 'Uroda i wygląd', 'niesamodzielność', 'Niesamodzielność może być wynikiem nadopiekuńczości.', 'несамостійність', 'Brak umiejętności radzenia sobie samemu']);
+                wsData.push([100, 'Rozdział drugi', 'Uroda i wygląd', 'organizacja charytatywna', 'Pracuję jako wolontariusz w organizacji charytatywnej.', 'благодійна організація', 'Instytucja pomagająca potrzebującym']);
+                wsData.push([101, 'Rozdział drugi', 'Uroda i wygląd', 'podłużna twarz', 'Ma podłużną twarz o wydłużonych rysach.', 'видовжене обличчя', 'Twarz o wydłużonym kształcie']);
+                wsData.push([102, 'Rozdział drugi', 'Uroda i wygląd', 'okrągła twarz', 'Dziecko ma uroczą okrągłą twarz.', 'кругле обличчя', 'Twarz o zaokrąglonych kształtach']);
+                wsData.push([103, 'Rozdział drugi', 'Uroda i wygląd', 'śniada cera', 'Ma śniadą cerę po wakacjach.', 'смуглява шкіра', 'Ciemniejsza karnacja']);
+                wsData.push([104, 'Rozdział drugi', 'Uroda i wygląd', 'piwne oczy', 'Ma ciepłe, piwne oczy.', 'карі очі', 'Oczy w kolorze piwa, brązowe']);
+                wsData.push([105, 'Rozdział drugi', 'Uroda i wygląd', 'zadarty nos', 'Mała dziewczynka ma zadarty nos.', 'кирпатий ніс', 'Nos lekko wzniesiony do góry']);
+                wsData.push([106, 'Rozdział drugi', 'Uroda i wygląd', 'haczykowaty nos', 'Ma charakterystyczny haczykowaty nos.', 'гачкуватий ніс', 'Nos zakrzywiony, orli']);
+                wsData.push([107, 'Rozdział drugi', 'Uroda i wygląd', 'jasna cera', 'Ma bardzo jasną cerą, musi uważać na słońce.', 'світла шкіра', 'Jasna karnacja']);
+                wsData.push([108, 'Rozdział drugi', 'Uroda i wygląd', 'piegi', 'Rude dzieci często mają piegi.', 'веснянки', 'Brązowe plamki na skórze']);
+                wsData.push([109, 'Rozdział drugi', 'Uroda i wygląd', 'grzywka', 'Obcięłam sobie grzywkę.', 'чубчик', 'Włosy opadające na czoło']);
+                wsData.push([110, 'Rozdział drugi', 'Uroda i wygląd', 'ona nosi śmieszne warkoczyki', 'Moja córka nosi śmieszne warkoczyki.', 'вона носить смішні косички', 'Fryzura z plecionymi włosami']);
+                wsData.push([111, 'Rozdział drugi', 'Uroda i wygląd', 'odstające uszy', 'Jako dziecko miałem kompleksy z powodu odstających uszu.', 'odstające уши', 'Uszy sterczące od głowy']);
+                wsData.push([112, 'Rozdział drugi', 'Uroda i wygląd', 'wydłużać się', 'Nos wydłuża się za każdym razem, jak kłamie.', 'видовжуватися', 'Stawać się dłuższym (jak u Pinokia)']);
+                wsData.push([113, 'Rozdział drugi', 'Uroda i wygląd', 'tęgi', 'Przed nami stał tęgi, kilkunastoletni chłopiec.', 'огрядний, повний', 'O budowie ciała - korpulentny']);
+                wsData.push([114, 'Rozdział drugi', 'Uroda i wygląd', 'kilkunastoletni chłopiec', 'Kilkunastoletni chłopiec siedział na ławce.', 'підліток (10-19 років)', 'Chłopak w wieku nastoletnim']);
+                wsData.push([115, 'Rozdział drugi', 'Uroda i wygląd', 'mieć charakterystyczną bliznę', 'Harry Potter ma charakterystyczną bliznę.', 'мати характерний шрам', 'Wyróżniający się ślad po zranieniu']);
+                wsData.push([116, 'Rozdział drugi', 'Uroda i wygląd', 'wysportowana sylwetka', 'Ma wysportowaną sylwetkę dzięki treningowi.', 'спортивна статура', 'Umięśniona, sprawna budowa ciała']);
+                wsData.push([117, 'Rozdział drugi', 'Uroda i wygląd', 'wyglądasz kwitnąco', 'Wyglądasz kwitnąco! Odpoczynek ci służy.', 'ти виглядаєш чудово', 'Wyglądać bardzo zdrowo i świeżo']);
+                wsData.push([118, 'Rozdział drugi', 'Uroda i wygląd', 'tryskać zdrowiem i energią', 'Po urlopie tryska zdrowiem i energią.', 'випромінювати здоров\'я та енергію', 'Być pełnym życia']);
+                wsData.push([119, 'Rozdział drugi', 'Uroda i wygląd', 'wyglądał jak siedem nieszczęść', 'Po chorobie wyglądał jak siedem nieszczęść.', 'виглядав жахливо', 'Wyglądać bardzo źle, niechlujnie']);
+                wsData.push([120, 'Rozdział drugi', 'Uroda i wygląd', 'dbać o siebie', 'Musisz dbać o siebie i o swoje zdrowie.', 'дбати про себе', 'Troszczyć się o własne dobro']);
+                wsData.push([121, 'Rozdział drugi', 'Uroda i wygląd', 'wyglądać jak milion dolarów', 'W tej sukience wyglądasz jak milion dolarów!', 'виглядати на мільйон доларів', 'Wyglądać bardzo elegancko i drogo']);
+                wsData.push([122, 'Rozdział drugi', 'Uroda i wygląd', 'tryskać entuzjazmem', 'Nowy pracownik tryska entuzjazmem.', 'випромінювати ентузіазм', 'Być bardzo entuzjastycznym']);
+                wsData.push([123, 'Rozdział drugi', 'Uroda i wygląd', 'samochwała', 'Nikt nie lubi samochwałów.', 'хвалько', 'Osoba przechwalająca się']);
+                wsData.push([124, 'Rozdział drugi', 'Uroda i wygląd', 'wydawać fortunę', 'Wydała fortunę na operacje plastyczne.', 'витрачати статки', 'Wydawać bardzo dużo pieniędzy']);
+                
+                // Rozdział trzeci - praca i zatrudnienie
+                wsData.push([125, 'Rozdział trzeci', 'Prawo pracy', 'żądać (+ dopełniacz)', 'Pracodawca może żądać od kandydata podania imienia, nazwiska oraz wykształcenia.', 'вимагати (+ родовий)', 'Domagać się czegoś stanowczo']);
+                wsData.push([126, 'Rozdział trzeci', 'Prawo pracy', 'plany macierzyńskie', 'Pracodawca nie może pytać o plany macierzyńskie.', 'плани щодо материнства', 'Zamiary związane z posiadaniem dzieci']);
+                wsData.push([127, 'Rozdział trzeci', 'Prawo pracy', 'przynależność', 'Nie można dyskryminować ze względu na przynależność do partii.', 'належність', 'Członkostwo w organizacji']);
+                wsData.push([128, 'Rozdział trzeci', 'Prawo pracy', 'związek zawodowy', 'Pracownicy założyli związek zawodowy.', 'профспілка', 'Organizacja broniąca praw pracowników']);
+                wsData.push([129, 'Rozdział trzeci', 'Prawo pracy', 'przekonanie', 'Każdy ma prawo do swoich przekonań.', 'переконання', 'Głębokie poglądy, wiara w coś']);
+                wsData.push([130, 'Rozdział trzeci', 'Prawo pracy', 'zatrudnienie', 'Szukam zatrudnienia w tej branży.', 'працевлаштування', 'Praca, posada']);
+                wsData.push([131, 'Rozdział trzeci', 'Prawo pracy', 'warunki pracy', 'Warunki pracy w tej firmie są bardzo dobre.', 'умови праці', 'Okoliczności wykonywania pracy']);
+                wsData.push([132, 'Rozdział trzeci', 'Prawo pracy', 'warunki zatrudnienia', 'Warunki zatrudnienia pracownika zależą od jego kwalifikacji.', 'умови працевлаштування', 'Zasady i wynagrodzenie w umowie']);
+                wsData.push([133, 'Rozdział trzeci', 'Prawo pracy', 'wzrastać', 'Liczba bezrobotnych wzrasta każdego roku.', 'зростати', 'Zwiększać się, rosnąć']);
+                wsData.push([134, 'Rozdział trzeci', 'Prawo pracy', 'gorszy', 'Warunki pracy są gorsze niż w poprzedniej firmie.', 'гірший', 'Mniej dobry']);
+                wsData.push([135, 'Rozdział trzeci', 'Prawo pracy', 'działać', 'Firma działa na rynku międzynarodowym.', 'діяти', 'Funkcjonować, operować']);
+                wsData.push([136, 'Rozdział trzeci', 'Prawo pracy', 'przeciwdziałać', 'Musimy przeciwdziałać dyskryminacji w pracy.', 'протидіяти', 'Zapobiegać czemuś złemu']);
+                wsData.push([137, 'Rozdział trzeci', 'Prawo pracy', 'zmniejszać się', 'Bezrobocie zmniejsza się z roku na rok.', 'зменшуватися', 'Maleć, spadać']);
+                wsData.push([138, 'Rozdział trzeci', 'Prawo pracy', 'poglądy', 'Kodeks zakazuje nierównego traktowania ze względu na poglądy religijne.', 'погляди', 'Opinie, przekonania']);
+                wsData.push([139, 'Rozdział trzeci', 'Prawo pracy', 'zwolnienie', 'Dostał zwolnienie z pracy po dwóch latach.', 'звільнення', 'Utrata pracy']);
+                wsData.push([140, 'Rozdział trzeci', 'Prawo pracy', 'mobbing', 'Mobbing w pracy jest niedozwolony.', 'мобінг', 'Nękanie, prześladowanie w pracy']);
+                wsData.push([141, 'Rozdział trzeci', 'Prawo pracy', 'bez względu na', 'Każdy ma taką samą liczbę dni urlopowych bez względu na staż pracy.', 'незалежно від', 'Niezależnie od czegoś']);
+                wsData.push([142, 'Rozdział trzeci', 'Prawo pracy', 'niewykorzystane dni wolne', 'Mam jeszcze 5 niewykorzystanych dni wolnych.', 'невикористані дні відпустки', 'Urlop, który jeszcze nie został wzięty']);
+                wsData.push([143, 'Rozdział trzeci', 'Prawo pracy', 'krótko, ale intensywnie', 'Pracujemy krótko, ale intensywnie.', 'коротко, але інтенсивно', 'Szybko i efektywnie']);
+                
+                // Rozdział trzeci - reakcje i uczucia
+                wsData.push([144, 'Rozdział trzeci', 'Zwroty konwersacyjne', 'jestem zadowolony/zadowolona ze zmian', 'Jestem zadowolona ze zmian w firmie.', 'я задоволений/задоволена змінами', 'Wyrażenie satysfakcji']);
+                wsData.push([145, 'Rozdział trzeci', 'Zwroty konwersacyjne', 'jestem niezadowolony/niezadowolona ze zmian', 'Jestem niezadowolony ze zmian w polityce firmy.', 'я незадоволений/незадоволена змінами', 'Wyrażenie braku satysfakcji']);
+                wsData.push([146, 'Rozdział trzeci', 'Zwroty konwersacyjne', 'cieszę się, że dobrze poszło', 'Cieszę się, że dobrze poszło na rozmowie.', 'я радію, що все вийшло добре', 'Wyrażenie radości z sukcesu']);
+                wsData.push([147, 'Rozdział trzeci', 'Zwroty konwersacyjne', 'udało mi się dostać pracę', 'Udało mi się dostać pracę w dobrej firmie!', 'мені вдалося отримати роботу', 'Osiągnięcie celu zawodowego']);
+                wsData.push([148, 'Rozdział trzeci', 'Zwroty konwersacyjne', 'o nie!', 'O nie! Zapomniałam o spotkaniu!', 'о ні!', 'Wykrzyknik wyrażający zdenerwowanie']);
+                wsData.push([149, 'Rozdział trzeci', 'Zwroty konwersacyjne', 'ładna historia', 'No no, ładna historia! Jak mogłeś to zapomnieć?', 'гарна історія', 'Idiom wyrażający zdziwienie, rozbawienie lub irytację sytuacją']);
+                wsData.push([150, 'Rozdział trzeci', 'Zwroty konwersacyjne', 'jestem rozczarowany tą decyzją', 'Jestem rozczarowany tą decyzją zarządu.', 'я розчарований цим рішенням', 'Wyrażenie zawodu']);
+                
+                // Rozdział trzeci - codzienne czynności i praca
+                wsData.push([151, 'Rozdział trzeci', 'Praca i życie', 'zajmować się dziećmi', 'Dzisiaj zajmuję się dziećmi, bo żona jest w pracy.', 'займатися дітьми', 'Opiekować się dziećmi']);
+                wsData.push([152, 'Rozdział trzeci', 'Praca i życie', 'potrzebuję osób lepiej wykwalifikowanych', 'Do tego projektu potrzebuję osób lepiej wykwalifikowanych.', 'мені потрібні краще кваліфіковані люди', 'Szukać pracowników z wyższymi kompetencjami']);
+                wsData.push([153, 'Rozdział trzeci', 'Praca i życie', 'dobrze płatna praca', 'Znalazłem dobrze płatną pracę.', 'добре оплачувана робота', 'Praca z wysokim wynagrodzeniem']);
+                wsData.push([154, 'Rozdział trzeci', 'Praca i życie', 'płaca', 'Moja płaca została podniesiona o 10%.', 'заробітна плата, зарплата', 'Wynagrodzenie za pracę']);
+                wsData.push([155, 'Rozdział trzeci', 'Praca i życie', 'na etacie', 'Pracuję na etacie w tej firmie.', 'на штатній посаді', 'Na stałej umowie o pracę']);
+                wsData.push([156, 'Rozdział trzeci', 'Praca i życie', 'dotacja na podnoszenie kwalifikacji', 'Firma daje dotację na podnoszenie kwalifikacji.', 'дотація на підвищення кваліфікації', 'Pieniądze na szkolenia']);
+                wsData.push([157, 'Rozdział trzeci', 'Praca i życie', 'nauczyciel poświęca czas na pracę w szkole', 'Nauczyciel poświęca dużo czasu na pracę w szkole.', 'вчитель присвячує час роботі в школі', 'Dedykować czas pracy']);
+                wsData.push([158, 'Rozdział trzeci', 'Praca i życie', 'spotykać się w sprawie strajku', 'Pracownicy spotykają się w sprawie strajku.', 'зустрічатися з приводу страйку', 'Organizować protest']);
+                wsData.push([159, 'Rozdział trzeci', 'Praca i życie', 'w mieszkaniu jest remont', 'W moim mieszkaniu jest remont.', 'в квартирі ремонт', 'Trwają prace budowlane']);
+                wsData.push([160, 'Rozdział trzeci', 'Praca i życie', 'wypożyczyć książki', 'Muszę wypożyczyć książki z biblioteki.', 'взяти книжки напрокат', 'Pożyczyć coś na czas']);
+                wsData.push([161, 'Rozdział trzeci', 'Praca i życie', 'spotykali się po latach', 'Stare przyjaciółki spotykały się po latach.', 'зустрілися через роки', 'Zobaczyć się po długim czasie']);
+                
+                // Rozdział trzeci - wykształcenie i badania
+                wsData.push([162, 'Rozdział trzeci', 'Praca i życie', 'mieć wykształcenie wyższe', 'Ma wykształcenie wyższe z ekonomii.', 'мати вищу освіту', 'Ukończyć uniwersytet']);
+                wsData.push([163, 'Rozdział trzeci', 'Praca i życie', 'mieć wykształcenie podstawowe', 'Ma tylko wykształcenie podstawowe.', 'мати базову освіту', 'Ukończyć szkołę podstawową']);
+                wsData.push([164, 'Rozdział trzeci', 'Praca i życie', 'respondent', 'Respondent wypełnił ankietę.', 'респондент', 'Osoba biorąca udział w badaniu']);
+                wsData.push([165, 'Rozdział trzeci', 'Praca i życie', 'sytuacja materialna', 'Sytuacja materialna rodziny się poprawiła.', 'матеріальний стан', 'Stan finansowy, zamożność']);
+                
+                // Rozdział trzeci - sprzęt AGD
+                wsData.push([166, 'Rozdział trzeci', 'AGD i dom', 'energooszczędność', 'Ten sprzęt charakteryzuje się wysoką energooszczędnością.', 'енергозбереження', 'Niska konsumpcja energii']);
+                wsData.push([167, 'Rozdział trzeci', 'AGD i dom', 'pralka', 'Muszę kupić nową pralkę.', 'пральна машина', 'Urządzenie do prania ubrań']);
+                wsData.push([168, 'Rozdział trzeci', 'AGD i dom', 'piekarnik', 'Piekę ciasto w piekarniku.', 'духовка', 'Urządzenie do pieczenia']);
+                wsData.push([169, 'Rozdział trzeci', 'AGD i dom', 'zmywarka', 'Zmywarka oszczędza dużo czasu.', 'посудомийна машина', 'Urządzenie do mycia naczyń']);
+                wsData.push([170, 'Rozdział trzeci', 'AGD i dom', 'lodówka', 'W lodówce nie ma już mleka.', 'холодильник', 'Urządzenie do chłodzenia żywności']);
+                wsData.push([171, 'Rozdział trzeci', 'AGD i dom', 'suszarka do włosów', 'Susząc włosy suszarką trzeba uważać na temperaturę.', 'фен', 'Urządzenie do suszenia włosów']);
+                wsData.push([172, 'Rozdział trzeci', 'AGD i dom', 'robot odkurzający', 'Robot odkurzający sprząta sam.', 'робот-пилосос', 'Automatyczny odkurzacz']);
+                wsData.push([173, 'Rozdział trzeci', 'AGD i dom', 'oczyszczacz powietrza', 'Oczyszczacz powietrza pomaga alergikom.', 'очищувач повітря', 'Urządzenie oczyszczające powietrze']);
+                
+                // Rozdział trzeci - idiomy
+                wsData.push([174, 'Rozdział trzeci', 'Idiomy', 'upiec dwie pieczenie na jednym ogniu', 'Zrobię zakupy i odwiedzę matkę - upiekę dwie pieczenie na jednym ogniu.', 'вбити двох зайців одним пострілом', 'Załatwić dwie sprawy jednocześnie']);
+                wsData.push([175, 'Rozdział trzeci', 'Idiomy', 'wtrącić swoje trzy grosze', 'Musi zawsze wtrącić swoje trzy grosze do rozmowy.', 'вставити свої п\'ять копійок', 'Dodać swoją opinię nieproszonemu']);
+                wsData.push([176, 'Rozdział trzeci', 'Idiomy', 'ni w pięć, ni w dziewięć', 'Powiedział to ni w pięć, ni w dziewięć.', 'ні з того, ні з сього', 'Bez powodu, bez sensu']);
+                wsData.push([177, 'Rozdział trzeci', 'Idiomy', 'być w siódmym niebie', 'Po awansie była w siódmym niebie.', 'бути на сьомому небі', 'Być bardzo szczęśliwym']);
+                
+                // Rozdział trzeci - inne
+                wsData.push([178, 'Rozdział trzeci', 'Idiomy', 'coś mnie denerwuje', 'Ten hałas mnie denerwuje.', 'щось мене дратує', 'Wyrażenie irytacji']);
+                wsData.push([179, 'Rozdział trzeci', 'Idiomy', 'urzędnik', 'Urzędnik załatwił mi wszystkie dokumenty.', 'чиновник, урядовець', 'Pracownik administracji publicznej']);
+                wsData.push([180, 'Rozdział trzeci', 'Inne', 'obcokrajowiec', 'W naszej firmie pracuje wielu obcokrajowców.', 'іноземець', 'Osoba z innego kraju']);
+                
+                // Rozdział czwarty - praca i emigracja
+                wsData.push([181, 'Rozdział czwarty', 'Emigracja - życie', 'firma konsultingowa', 'Pracuję w dużej firmie konsultingowej.', 'консалтингова фірма', 'Firma świadcząca usługi doradcze']);
+                wsData.push([182, 'Rozdział czwarty', 'Emigracja - życie', 'widujemy się co tydzień', 'Widujemy się co tydzień na spotkaniach.', 'ми бачимося щотижня', 'Spotykać się regularnie']);
+                wsData.push([183, 'Rozdział czwarty', 'Emigracja - życie', 'mamy zamiar przeprowadzić się', 'Mamy zamiar przeprowadzić się do Warszawy.', 'ми маємо намір переїхати', 'Planować zmianę miejsca zamieszkania']);
+                wsData.push([184, 'Rozdział czwarty', 'Emigracja - życie', 'niechętnie wprowadzamy zmiany', 'Niechętnie wprowadzamy zmiany w firmie.', 'неохоче впроваджуємо зміни', 'Robić coś bez entuzjazmu']);
+                wsData.push([185, 'Rozdział czwarty', 'Emigracja - życie', 'specyfika kraju', 'Trzeba poznać specyfikę kraju przed wyjazdem.', 'специфіка країни', 'Charakterystyczne cechy danego miejsca']);
+                wsData.push([186, 'Rozdział czwarty', 'Emigracja - życie', 'ograniczony kontakt', 'Mam ograniczony kontakt z rodziną.', 'обмежений контакт', 'Rzadki, niewielki kontakt']);
+                wsData.push([187, 'Rozdział czwarty', 'Emigracja - życie', 'sytuacja polityczna', 'Sytuacja polityczna wpływa na decyzję o emigracji.', 'політична ситуація', 'Stan spraw politycznych w kraju']);
+                wsData.push([188, 'Rozdział czwarty', 'Emigracja - życie', 'nie dostałam się na uniwersytet', 'Niestety nie dostałam się na uniwersytet.', 'я не вступила до університету', 'Nie zdać egzaminów wstępnych']);
+                wsData.push([189, 'Rozdział czwarty', 'Emigracja - życie', 'zderzenie się z rzeczywistością', 'Emigracja to często zderzenie się z rzeczywistością.', 'зіткнення з реальністю', 'Konfrontacja z prawdziwym stanem rzeczy']);
+                wsData.push([190, 'Rozdział czwarty', 'Emigracja - życie', 'pozytywnie nastawieni do', 'Jesteśmy pozytywnie nastawieni do obcokrajowców.', 'позитивно налаштовані до', 'Mieć przychylne podejście']);
+                wsData.push([191, 'Rozdział czwarty', 'Emigracja - życie', 'nie mam wykształcenia', 'Niestety nie mam wykształcenia wyższego.', 'я не маю освіти', 'Brak edukacji formalnej']);
+                wsData.push([192, 'Rozdział czwarty', 'Emigracja - życie', 'nie zrezygnowałam z planów', 'Mimo trudności nie zrezygnowałam z planów.', 'я не відмовилася від планів', 'Nie porzucić zamierzeń']);
+                wsData.push([193, 'Rozdział czwarty', 'Emigracja - życie', 'trudno utrzymać się', 'Trudno utrzymać się z takiej pensji.', 'важко прожити', 'Ciężko przeżyć finansowo']);
+                wsData.push([194, 'Rozdział czwarty', 'Emigracja - życie', 'stawianie sobie realistycznych celów', 'Stawianie sobie realistycznych celów jest ważne.', 'постановка реалістичних цілей', 'Wyznaczanie osiągalnych zadań']);
+                wsData.push([195, 'Rozdział czwarty', 'Emigracja - życie', 'przedsiębiorczy', 'Jest bardzo przedsiębiorczy i pomysłowy.', 'підприємливий', 'Aktywny, inicjatywny w działaniu']);
+                wsData.push([196, 'Rozdział czwarty', 'Emigracja - życie', 'nieprzychylni', 'Byli nieprzychylni naszym propozycjom.', 'неприхильні', 'Niechętni, wrogo nastawieni']);
+                
+                // Rozdział czwarty - zwroty konwersacyjne
+                wsData.push([197, 'Rozdział czwarty', 'Emigracja - życie', 'to nie takie proste', 'Znaleźć pracę za granicą to nie takie proste.', 'це не так просто', 'Wyrażenie trudności zadania']);
+                wsData.push([198, 'Rozdział czwarty', 'Emigracja - życie', 'u nas jest inaczej', 'U nas w Polsce jest inaczej niż w Niemczech.', 'у нас інакше', 'Porównanie różnic kulturowych']);
+                wsData.push([199, 'Rozdział czwarty', 'Emigracja - życie', 'to trudno powiedzieć', 'Czy wrócę? To trudno powiedzieć.', 'важко сказати', 'Wyrażenie niepewności']);
+                wsData.push([200, 'Rozdział czwarty', 'Emigracja zarobkowa', 'u nas jest podobnie', 'U nas w rodzinie jest podobnie.', 'у нас подібно', 'Wskazanie podobieństwa']);
+                wsData.push([201, 'Rozdział czwarty', 'Emigracja zarobkowa', 'do niczego nie można porównać', 'Ta radość do niczego nie można porównać.', 'ні з чим не можна порівняти', 'Unikalne, wyjątkowe uczucie']);
+                
+                // Rozdział czwarty - emigracja zarobkowa
+                wsData.push([202, 'Rozdział czwarty', 'Emigracja zarobkowa', 'skala emigracji zarobkowej', 'Skala emigracji zarobkowej wzrasta.', 'масштаб трудової еміграції', 'Wielkość wyjazdów za pracą']);
+                wsData.push([203, 'Rozdział czwarty', 'Emigracja zarobkowa', 'powód do niepokoju', 'To jest poważny powód do niepokoju.', 'привід для занепокоєння', 'Przyczyna zmartwienia']);
+                wsData.push([204, 'Rozdział czwarty', 'Emigracja zarobkowa', 'rodacy', 'Spotkałem tam wielu rodaków.', 'співвітчизники', 'Osoby z tego samego kraju']);
+                wsData.push([205, 'Rozdział czwarty', 'Emigracja zarobkowa', 'poważna konkurencja', 'Na rynku pracy jest poważna konkurencja.', 'серйозна конкуренція', 'Duża rywalizacja']);
+                wsData.push([206, 'Rozdział czwarty', 'Emigracja zarobkowa', 'zachodnie rynki pracy', 'Polacy wyjeżdżają na zachodnie rynki pracy.', 'західні ринки праці', 'Rynki pracy w Europie Zachodniej']);
+                wsData.push([207, 'Rozdział czwarty', 'Emigracja zarobkowa', 'mobilność', 'Mobilność pracowników jest bardzo ważna.', 'мобільність', 'Gotowość do przemieszczania się']);
+                wsData.push([208, 'Rozdział czwarty', 'Emigracja zarobkowa', 'sprawiać, że', 'To sprawia, że czuję się szczęśliwy.', 'робити так, що', 'Powodować coś']);
+                wsData.push([209, 'Rozdział czwarty', 'Emigracja zarobkowa', 'oszacowanie', 'Według oszacowania, wyjechało 2 miliony osób.', 'оцінка', 'Przybliżona kalkulacja']);
+                wsData.push([210, 'Rozdział czwarty', 'Emigracja zarobkowa', 'ojczysty kraj', 'Tęsknię za ojczystym krajem.', 'рідна країна', 'Kraj pochodzenia']);
+                wsData.push([211, 'Rozdział czwarty', 'Emigracja zarobkowa', 'trudno się dziwić', 'Trudno się dziwić, że ludzie wyjeżdżają.', 'важко дивуватися', 'Wyrażenie zrozumienia sytuacji']);
+                wsData.push([212, 'Rozdział czwarty', 'Emigracja zarobkowa', 'uwagę zwraca', 'Uwagę zwraca duża liczba młodych emigrantów.', 'увагу привертає', 'Coś jest zauważalne']);
+                wsData.push([213, 'Rozdział czwarty', 'Emigracja zarobkowa', 'kryzys gospodarczy', 'Kryzys gospodarczy wpłynął na emigrację.', 'економічна криза', 'Trudna sytuacja ekonomiczna']);
+                wsData.push([214, 'Rozdział czwarty', 'Emigracja zarobkowa', 'bezrobocie', 'Bezrobocie jest głównym powodem emigracji.', 'безробіття', 'Brak pracy']);
+                wsData.push([215, 'Rozdział czwarty', 'Emigracja zarobkowa', 'posiadać miejsce zamieszkania', 'Muszę posiadać stałe miejsce zamieszkania.', 'мати місце проживання', 'Mieć oficjalny adres']);
+                wsData.push([216, 'Rozdział czwarty', 'Emigracja zarobkowa', 'wyspiarski kraj', 'Wielka Brytania to wyspiarski kraj.', 'острівна країна', 'Kraj położony na wyspie']);
+                wsData.push([217, 'Rozdział czwarty', 'Emigracja zarobkowa', 'skłoniło mnie', 'To skłoniło mnie do wyjazdu.', 'це спонукало мене', 'Zmotywowało, przekonało']);
+                wsData.push([218, 'Rozdział czwarty', 'Tożsamość i kultura', 'inna mentalność', 'Tam panuje zupełnie inna mentalność.', 'інший менталітет', 'Odmienny sposób myślenia']);
+                wsData.push([219, 'Rozdział czwarty', 'Tożsamość i kultura', 'zdobycie wiedzy', 'Wyjazd to szansa na zdobycie wiedzy.', 'здобуття знань', 'Nabycie umiejętności']);
+                
+                // Rozdział czwarty - tożsamość i kultura
+                wsData.push([220, 'Rozdział czwarty', 'Tożsamość i kultura', 'niepodległość', 'Polska odzyskała niepodległość w 1918 roku.', 'незалежність', 'Suwerenność państwa']);
+                wsData.push([221, 'Rozdział czwarty', 'Tożsamość i kultura', 'powstanie', 'Powstanie warszawskie było w 1944 roku.', 'повстання', 'Zbrojny bunt przeciw władzy']);
+                wsData.push([222, 'Rozdział czwarty', 'Tożsamość i kultura', 'mniejszości', 'W Polsce żyją różne mniejszości narodowe.', 'меншини', 'Grupy etniczne w mniejszości']);
+                wsData.push([223, 'Rozdział czwarty', 'Tożsamość i kultura', 'wielokulturowość', 'Wielokulturowość to bogactwo społeczeństwa.', 'мультикультурність', 'Różnorodność kulturowa']);
+                wsData.push([224, 'Rozdział czwarty', 'Tożsamość i kultura', 'tożsamość', 'Tożsamość narodowa jest bardzo ważna.', 'ідентичність', 'Świadomość przynależności']);
+                wsData.push([225, 'Rozdział czwarty', 'Tożsamość i kultura', 'tradycja', 'Kultywujemy polskie tradycje.', 'традиція', 'Zwyczaje przekazywane z pokolenia']);
+                wsData.push([226, 'Rozdział czwarty', 'Tożsamość i kultura', 'tolerancja', 'Tolerancja jest podstawą współżycia.', 'толерантність', 'Akceptacja różnic']);
+                wsData.push([227, 'Rozdział czwarty', 'Tożsamość i kultura', 'akceptacja', 'Brak akceptacji prowadzi do konfliktów.', 'прийняття', 'Zgoda, uznanie czegoś']);
+                wsData.push([228, 'Rozdział czwarty', 'Tożsamość i kultura', 'integracja', 'Integracja imigrantów to długi proces.', 'інтеграція', 'Włączanie się do społeczeństwa']);
+                wsData.push([229, 'Rozdział czwarty', 'Tożsamość i kultura', 'gwarantuje równe traktowanie', 'Prawo gwarantuje równe traktowanie wszystkich.', 'гарантує рівне ставлення', 'Zapewnia sprawiedliwość']);
+                wsData.push([230, 'Rozdział czwarty', 'Integracja', 'niezależnie od pochodzenia', 'Każdy jest równy niezależnie od pochodzenia.', 'незалежно від походження', 'Bez względu na narodowość']);
+                wsData.push([231, 'Rozdział czwarty', 'Integracja', 'wykształcenie postaw', 'Szkoła służy wykształceniu postaw tolerancji.', 'формування ставлення', 'Kształtowanie sposobu myślenia']);
+                
+                // Rozdział czwarty - problemy integracji
+                wsData.push([232, 'Rozdział czwarty', 'Integracja', 'katastrofalne', 'Skutki tej polityki są katastrofalne.', 'катастрофічні', 'Bardzo złe, tragiczne']);
+                wsData.push([233, 'Rozdział czwarty', 'Integracja', 'odrzucenie kultury', 'Odrzucenie własnej kultury to błąd.', 'відкидання культури', 'Wyparcie się tradycji']);
+                wsData.push([234, 'Rozdział czwarty', 'Integracja', 'uchodźcy', 'Uchodźcy potrzebują pomocy humanitarnej.', 'біженці', 'Osoby uciekające z kraju']);
+                wsData.push([235, 'Rozdział czwarty', 'Integracja', 'łamanie prawa', 'Łamanie prawa będzie karane.', 'порушення закону', 'Nieprzestrzeganie przepisów']);
+                wsData.push([236, 'Rozdział czwarty', 'Integracja', 'poczucie bezpieczeństwa', 'Poczucie bezpieczeństwa jest bardzo ważne.', 'почуття безпеки', 'Odczucie ochrony']);
+                wsData.push([237, 'Rozdział czwarty', 'Integracja', 'skrajne rozczarowanie', 'Przeżył skrajne rozczarowanie emigracją.', 'крайнє розчарування', 'Bardzo silny zawód']);
+                wsData.push([238, 'Rozdział czwarty', 'Integracja', 'dążenie do utrzymania zwyczajów', 'Dążenie do utrzymania zwyczajów jest naturalne.', 'прагнення зберегти звичаї', 'Chęć zachowania tradycji']);
+                wsData.push([239, 'Rozdział czwarty', 'Integracja', 'wykluczenie społeczne', 'Wykluczenie społeczne to poważny problem.', 'соціальне відчуження', 'Izolacja od społeczeństwa']);
+                wsData.push([240, 'Rozdział czwarty', 'Integracja', 'konflikt międzypokoleniowy', 'Konflikt międzypokoleniowy często występuje w rodzinach emigrantów.', 'міжпоколінний конфлікт', 'Spór między pokoleniami']);
+                wsData.push([241, 'Rozdział czwarty', 'Integracja', 'asymilacja', 'Asymilacja to proces dostosowania się.', 'асиміляція', 'Całkowite przystosowanie do kultury']);
+                wsData.push([242, 'Rozdział czwarty', 'Integracja', 'przystosowanie się', 'Przystosowanie się do nowego kraju zajmuje czas.', 'пристосування', 'Adaptacja do warunków']);
+                wsData.push([243, 'Rozdział czwarty', 'Integracja', 'identyfikacja', 'Identyfikacja z nowym krajem trwa latami.', 'ідентифікація', 'Utożsamianie się z czymś']);
+                wsData.push([244, 'Rozdział czwarty', 'Idiomy', 'wyrzeczenie się', 'Wyrzeczenie się własnej kultury jest trudne.', 'відмова від', 'Rezygnacja z czegoś']);
+                wsData.push([245, 'Rozdział czwarty', 'Idiomy', 'marginalizacja', 'Marginalizacja imigrantów to duży problem.', 'маргіналізація', 'Zepchnięcie na margines społeczeństwa']);
+                
+                // Rozdział czwarty - idiomy
+                wsData.push([246, 'Rozdział czwarty', 'Idiomy', 'upadłeś na głowę', 'Chcesz tam jechać? Upadłeś na głowę!', 'ти з глузду з\'їхав', 'Zwariowałeś (idiom)']);
+                wsData.push([247, 'Rozdział czwarty', 'Idiomy', 'to się nie mieści w głowie', 'To się nie mieści w głowie, jak tak można!', 'це не вкладається в голові', 'Trudno uwierzyć, absurdalne']);
+                wsData.push([248, 'Rozdział czwarty', 'Idiomy', 'przyjmą cię tam z otwartymi ramionami', 'Przyjmą cię tam z otwartymi ramionami.', 'приймуть тебе з відкритими обіймами', 'Przyjąć bardzo ciepło']);
+                wsData.push([249, 'Rozdział czwarty', 'Idiomy', 'stanę na własnych nogach', 'Chcę stanąć na własnych nogach.', 'стану на власні ноги', 'Osiągnąć samodzielność']);
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            
+            ws['!cols'] = [
+                {wch: 8},   // ID
+                {wch: 30},  // Rozdział
+                {wch: 25},  // Kategoria
+                {wch: 30},  // Słowo (Polski)
+                {wch: 45},  // Przykład (Polski)
+                {wch: 30},  // Tłumaczenie (Українська)
+                {wch: 50}   // Notatki (Українська)
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Fiszki');
+            
+            XLSX.writeFile(wb, 'fiszki-polski-ukrainski.xlsx');
+        };
+    </script>
+</body>
+</html>
