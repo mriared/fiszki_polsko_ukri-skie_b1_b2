@@ -671,19 +671,32 @@
         const { useState, useEffect } = React;
         // Domyślne fiszki
         const getDefaultFlashcards = () => [
-            {id: 1, category: ['Moduł 1', 'Dane osobowe'], word: 'myślnik', example: 'Moje nazwisko, Perez-Woźniak, pisze się przez myślnik.', translation: 'тире', notes: 'Znak interpunkcyjny używany np. w nazwiskach dwuczłonowych'},
-            {id: 2, category: ['Moduł 1', 'Dane osobowe'], word: 'nazwisko panieńskie', example: 'Jakie jest nazwisko panieńskie Twojej matki?', translation: 'дівоче прізвище', notes: 'Nazwisko kobiety sprzed wyjścia za mąż'},
-            {id: 3, category: ['Moduł 1', 'Dane osobowe'], word: 'mężatka', example: 'Anna jest mężatką od pięciu lat.', translation: 'заміжня', notes: 'Kobieta posiadająca męża'},
-            {id: 4, category: ['Moduł 1', 'Człowiek'], word: 'osobisty', example: 'To jest mój osobisty sukces.', translation: 'особистий', notes: 'Przymiotnik odnoszący się do konkretnej osoby'},
-            {id: 5, category: ['Moduł 1', 'Ogólne'], word: 'osobowy', example: 'Wypełnij formularz osobowy swoimi danymi.', translation: 'особовий', notes: 'Odnoszący się do osób, np. zaimek osobowy lub dowód osobowy'},
-            {id: 6, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'stawiać czoła', example: 'Musimy stawiać czoła trudnościom każdego dnia.', translation: 'протистояти / дивитися в обличчя (проблемам)', notes: 'Mierzyć się z problemami lub wyzwaniami'},
-            {id: 7, category: ['Moduł 1', 'Ogólne'], word: 'konsekwencja', example: 'Każda decyzja ma swoje konsekwencje.', translation: 'наслідок', notes: 'Wynik jakiegoś działania lub zdarzenia'},
-            {id: 8, category: ['Moduł 1', 'Myślenie'], word: 'zastanowić się', example: 'Muszę się chwilę zastanowić przed podjęciem decyzji.', translation: 'замислитися / подумати', notes: 'Poświęcić czas na przemyślenie czegoś'},
-            {id: 9, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'nie zdawać sobie sprawy', example: 'On nie zdaje sobie sprawy z konsekwencji palenia papierosów elektronicznych.', translation: 'не усвідомлювати', notes: 'Nie wiedzieć o czymś lub nie rozumieć czegoś w pełni'},
-            {id: 10, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'popełnianie oszustw', example: 'Popełnianie oszustw podatkowych jest surowo karane.', translation: 'вчинення шахрайства', notes: 'Działanie nieuczciwe, oszukiwanie kogoś'},
-            {id: 11, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'podjąć środki ostrożności', example: 'Warto podjąć środki ostrożności przed daleką podróżą.', translation: 'вжити заходів безпеки', notes: 'Zrobić coś, aby uniknąć niebezpieczeństwa'},
-            {id: 12, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'poufne informacje', example: 'To są poufne informacje, nie możesz ich nikomu zdradzić.', translation: 'конфіденційна інформація', notes: 'Dane, które nie powinny być ujawniane publicznie'}        
-];
+            {id: 1, category: ['Moduł 1', 'Dane osobowe'], word: 'myślnik', example: 'Moje nazwisko, Perez-Woźniak, pisze się przez myślnik.', translation: 'тире / працяжнік', notes: 'Znak interpunkcyjny używany np. w nazwiskach dwuczłonowych'},
+            {id: 2, category: ['Moduł 1', 'Dane osobowe'], word: 'nazwisko panieńskie', example: 'Jakie jest nazwisko panieńskie Twojej matki?', translation: 'дівоче прізвище / дзявочае прозвішча', notes: 'Nazwisko kobiety sprzed wyjścia za mąż'},
+            {id: 3, category: ['Moduł 1', 'Dane osobowe'], word: 'mężatka', example: 'Anna jest mężatką od pięciu lat.', translation: 'заміжня / замужняя', notes: 'Kobieta posiadająca męża'},
+            {id: 4, category: ['Moduł 1', 'Człowiek'], word: 'osobisty', example: 'To jest mój osobisty sukces.', translation: 'особистий / асабісты', notes: 'Przymiotnik odnoszący się do konkretnej osoby'},
+            {id: 5, category: ['Moduł 1', 'Ogólne'], word: 'osobowy', example: 'Wypełnij formularz osobowy swoimi danymi.', translation: 'особовий / асабовы', notes: 'Odnoszący się do osób, np. zaimek osobowy lub dowód osobowy'},
+            {id: 6, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'stawiać czoła', example: 'Musimy stawiać czoła trudnościom każdego dnia.', translation: 'протистояти / супрацьстаяць', notes: 'Mierzyć się z problemami lub wyzwaniami'},
+            {id: 7, category: ['Moduł 1', 'Ogólne'], word: 'konsekwencja', example: 'Każda decyzja ma swoje konsekwencje.', translation: 'наслідок / наступства', notes: 'Wynik jakiegoś działania lub zdarzenia'},
+            {id: 8, category: ['Moduł 1', 'Myślenie'], word: 'zastanowić się', example: 'Muszę się chwilę zastanowić przed podjęciem decyzji.', translation: 'замислитися / задумацца', notes: 'Poświęcić czas na przemyślenie czegoś'},
+            {id: 9, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'nie zdawać sobie sprawy', example: 'On nie zdaje sobie sprawy z konsekwencji palenia papierosów.', translation: 'не усвідомлювати / не ўсведамляць', notes: 'Nie wiedzieć o czymś lub nie rozumieć czegoś w pełni'},
+            {id: 10, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'popełnianie oszustw', example: 'Popełnianie oszustw podatkowych jest surowo karane.', translation: 'вчиnienie шахрайства / здзяйсненне махлярства', notes: 'Działanie nieuczciwe, oszukiwanie kogoś'},
+            {id: 11, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'podjąć środki ostrożności', example: 'Warto podjąć środki ostrożności przed podróżą.', translation: 'вжити заходів безпеки / прыняць меры засцярогі', notes: 'Zrobić coś, aby uniknąć niebezpieczeństwa'},
+            {id: 12, category: ['Moduł 1', 'Związki frazeologiczne'], word: 'poufne informacje', example: 'To są poufne informacje, nie możesz ich nikomu zdradzić.', translation: 'конфіденційна інформація / канфідэнцыйная інфармацыя', notes: 'Dane, które nie powinny być ujawniane publicznie'},
+            {id: 13, category: ['Moduł 1', 'Nauka'], word: 'medycyna jądrowa', example: 'Medycyna jądrowa wykorzystuje izotopy do diagnostyki i leczenia.', translation: 'ядерна медицина / ядзерная медыцына', notes: 'Dziedzina medycyny zajmująca się zastosowaniem substancji promieniotwórczych'},
+            {id: 14, category: ['Moduł 1', 'Nauka'], word: 'promieniotwórczość', example: 'Maria Skłodowska-Curie prowadziła badania nad promieniotwórczością.', translation: 'радіоактивність / радыёактыўнасць', notes: 'Zdolność jąder atomowych do rozpadu i emisji promieniowania'},
+            {id: 15, category: ['Moduł 1', 'Nauka'], word: 'pierwiastki', example: 'W układzie okresowym znajdziemy wszystkie znane pierwiastki.', translation: 'хімічні елементи / хімічныя элементы', notes: 'Podstawowe substancje chemiczne'},
+            {id: 16, category: ['Moduł 1', 'Zmiana'], word: 'zrewolucjonizować', example: 'Wynalezienie internetu zrewolucjonizowało sposób komunikacji.', translation: 'революціонізувати / рэвалюцыянізаваць', notes: 'Wprowadzić radykalne zmiany w jakiejś dziedzinie'},
+            {id: 17, category: ['Moduł 1', 'Nauka'], word: 'sformułować teorię', example: 'Naukowiec musi sformułować teorię, a potem ją udowodnić.', translation: 'сформулювати теорію / сфармуляваць тэорыю', notes: 'Przedstawić logicznie spójny zbiór twierdzeń'},
+            {id: 18, category: ['Moduł 1', 'Czas'], word: 'z biegiem lat', example: 'Z biegiem lat nasze priorytety często się zmieniają.', translation: 'з роками / з цягам гадоў', notes: 'Wraz z upływem czasu'},
+            {id: 19, category: ['Moduł 1', 'Postrzeganie'], word: 'postrzegać', example: 'Każdy może postrzegać tę sytuację w inny sposób.', translation: 'сприймати / успрымаць', notes: 'Odbierać coś zmysłami lub rozumieć w określony sposób'},
+            {id: 20, category: ['Moduł 1', 'Człowiek'], word: 'wybitny', example: 'Fryderyk Chopin był wybitnym kompozytorem.', translation: 'видатний / выбітны', notes: 'Taki, który wyróżnia się nadzwyczajnymi zdolnościami'},
+            {id: 21, category: ['Moduł 1', 'Działanie'], word: 'przyczynić się', example: 'Twoja pomoc może przyczynić się do sukcesu projektu.', translation: 'сприяти / паспрыяць', notes: 'Mieć wpływ na powstanie czegoś'},
+            {id: 22, category: ['Moduł 1', 'Działanie'], word: 'przyciągać', example: 'To miasto przyciąga tysiące turystów każdego lata.', translation: 'притягувати / прыцягваць', notes: 'Wzbudzać zainteresowanie lub działać siłą fizyczną'},
+            {id: 23, category: ['Moduł 1', 'Nauka'], word: 'objętość', example: 'Musimy obliczyć objętość tego naczynia.', translation: 'об’єм / аб’ём', notes: 'Ilość miejsca zajmowanego przez ciało w przestrzeni'},
+            {id: 24, category: ['Moduł 1', 'Wygląd'], word: 'zgarbiony', example: 'Siedział przy biurku zgarbiony przez wiele godzin.', translation: 'сутулий / ссутулены', notes: 'Mający nienaturalnie wygięte plecy'},
+            {id: 25, category: ['Moduł 1', 'Wygląd'], word: 'orli nos', example: 'Jego charakterystyczną cechą był duży, orli nos.', translation: 'орлиний ніс / арліны нос', notes: 'Nos o zakrzywionym, drapieżnym profilu'}
+        ];
 
 
         function FlashcardApp() {
