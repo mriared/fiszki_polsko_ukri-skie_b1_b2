@@ -1174,40 +1174,85 @@
                                                         onClick={handleFlip}
                                                     >
                                                         <div className="flashcard-face flashcard-front">
-                                                            <div className="flag-icon">🇵🇱</div>
-                                                            <div className="flashcard-word">
-                                                                {currentCard.word}
-                                                            </div>
-                                                            {currentCard.example && (
-                                                                <div className="flashcard-example">
-                                                                    {currentCard.example}
-                                                                </div>
+                                                            {direction === 'ua-pl' ? (
+                                                                <>
+                                                                    <div className="flag-icon">🇺🇦 / 🇷🇺</div>
+                                                                    <div className="flashcard-translation">
+                                                                        {currentCard.translation}
+                                                                    </div>
+                                                                    {currentCard.category && (
+                                                                        <div className="flashcard-hint">
+                                                                            {Array.isArray(currentCard.category)
+                                                                                ? currentCard.category.join(', ')
+                                                                                : currentCard.category}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flip-hint">
+                                                                        👆 Kliknij, aby zobaczyć tłumaczenie na polski
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="flag-icon">🇵🇱</div>
+                                                                    <div className="flashcard-word">
+                                                                        {currentCard.word}
+                                                                    </div>
+                                                                    {currentCard.example && (
+                                                                        <div className="flashcard-example">
+                                                                            {currentCard.example}
+                                                                        </div>
+                                                                    )}
+                                                                    {currentCard.notes && (
+                                                                        <div className="flashcard-example">
+                                                                            {currentCard.notes}
+                                                                        </div>
+                                                                    )}
+                                                                    {currentCard.category && (
+                                                                        <div className="flashcard-hint">
+                                                                            {Array.isArray(currentCard.category)
+                                                                                ? currentCard.category.join(', ')
+                                                                                : currentCard.category}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flip-hint">
+                                                                        👆 Kliknij, aby zobaczyć tłumaczenie
+                                                                    </div>
+                                                                </>
                                                             )}
-                                                            {currentCard.notes && (
-                                                                <div className="flashcard-example">
-                                                                    {currentCard.notes}
-                                                                </div>
-                                                            )}
-                                                            {currentCard.category && (
-                                                                <div className="flashcard-hint">
-                                                                    {Array.isArray(currentCard.category)
-                                                                        ? currentCard.category.join(', ')
-                                                                        : currentCard.category}
-                                                                </div>
-                                                            )}
-                                                            <div className="flip-hint">
-                                                                👆 Kliknij, aby zobaczyć tłumaczenie
-                                                            </div>
                                                         </div>
 
                                                         <div className="flashcard-face flashcard-back">
-                                                            <div className="flag-icon">🇺🇦 / 🇷🇺</div>
-                                                            <div className="flashcard-translation">
-                                                                {currentCard.translation}
-                                                            </div>
-                                                            <div className="flip-hint">
-                                                                👆 Kliknij, aby wrócić
-                                                            </div>
+                                                            {direction === 'ua-pl' ? (
+                                                                <>
+                                                                    <div className="flag-icon">🇵🇱</div>
+                                                                    <div className="flashcard-word">
+                                                                        {currentCard.word}
+                                                                    </div>
+                                                                    {currentCard.example && (
+                                                                        <div className="flashcard-example">
+                                                                            {currentCard.example}
+                                                                        </div>
+                                                                    )}
+                                                                    {currentCard.notes && (
+                                                                        <div className="flashcard-example">
+                                                                            {currentCard.notes}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flip-hint">
+                                                                        👆 Kliknij, aby wrócić
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="flag-icon">🇺🇦 / 🇷🇺</div>
+                                                                    <div className="flashcard-translation">
+                                                                        {currentCard.translation}
+                                                                    </div>
+                                                                    <div className="flip-hint">
+                                                                        👆 Kliknij, aby wrócić
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
